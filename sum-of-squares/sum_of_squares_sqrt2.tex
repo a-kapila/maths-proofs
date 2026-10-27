@@ -1,0 +1,310 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.35cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+  pdftitle={A Square-Root-Two Exponent for Bilinear Sum-of-Squares Composition Formulas},
+  pdfsubject={A conditional algebraic consequence of the crossing decomposition in Appendix B of a 3-SAT manuscript},
+  pdfkeywords={sum of squares, Hurwitz problem, crossing decomposition, bilinear forms}
+}
+\newtheorem{theorem}{Theorem}
+\newcommand{\CC}{\mathbb C}
+\newcommand{\QQ}{\mathbb Q}
+\newcommand{\RR}{\mathbb R}
+\newcommand{\ii}{\mathrm i}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlength{\emergencystretch}{1.2em}
+\allowdisplaybreaks[1]
+
+\title{\textbf{An \(N^{\sqrt{2}+o(1)}\) Upper Bound for Bilinear\\
+Sum-of-Squares Composition Formulas}\\[0.7em]
+\large An algebraic consequence of Appendix B of\\
+\emph{A \(2^{o(n)}\) Time Algorithm for 3-SAT}}
+\author{}
+\date{27 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Assuming the algebraic identities and uniform rank estimates in Appendix~B
+of the 26 October 2026 Claude/Anthropic manuscript \emph{A \(2^{o(n)}\)
+Time Algorithm for 3-SAT}, its crossing decomposition implies an upper
+bound of \(N^{\sqrt{2}+o(1)}\) for Naslund's crossing-decomposition quantity
+\(P(N)\). It also yields an identity expressing the product of two sums of
+\(N\) squares as a sum of at most \(N^{\sqrt{2}+o(1)}\) products of rational
+bilinear forms. Over the complex numbers, each such product is a sum of
+two squares of bilinear forms. Consequently, the same hypotheses imply a
+complex bilinear sum-of-squares composition formula with at most
+\(N^{\sqrt{2}+o(1)}\) squares, improving the \(O(N^{1.62})\) bound of
+Hrube\v{s} (2024, 2026). No modification of the construction in Appendix~B
+is necessary. The implication uses only its algebraic identities and rank
+estimates, not the SAT algorithm or its running-time analysis.
+\end{abstract}
+
+\section{Main result}
+
+Let \(M_{\CC}(N)\) denote the minimum integer \(M\) for which there exist
+complex bilinear forms \(F_1,\ldots,F_M\) satisfying the polynomial identity
+\[
+  \left(\sum_{i=1}^{N}a_i^2\right)
+  \left(\sum_{j=1}^{N}b_j^2\right)
+  =\sum_{\ell=1}^{M}F_\ell(a,b)^2.
+\]
+Here each form is homogeneous of degree one in \(a\) and of degree one in
+\(b\). The squares are algebraic squares, without complex conjugation.
+
+\begin{theorem}[Conditional on the Appendix B construction]
+\label{thm:main}
+Assume the identities and the uniform rank-factorization estimate
+\eqref{eq:decomposition}--\eqref{eq:rank} below, established in
+Appendix~B of \emph{A \(2^{o(n)}\) Time Algorithm for 3-SAT}
+\cite{claude}. There is an absolute constant \(C\) such that, for every
+\(N\geq 2\),
+\[
+  M_{\CC}(N)=O\!\left(N^{\sqrt{2}}(\log N)^C\right).
+\]
+In particular, \(M_{\CC}(N)\leq N^{\sqrt{2}+o(1)}\).
+The same upper bound holds for the number of rational bilinear products
+required to express the product of two sums of squares, and for the
+crossing-decomposition quantity \(P(N)\) defined in Appendix~G of that
+manuscript.
+\end{theorem}
+
+\section{The crossing decomposition}
+
+First suppose \(N=2^\lambda\), and identify \([N]=\{1,\ldots,N\}\) with
+\(\{0,1\}^{\lambda}\). Define the crossing tensor
+\[
+  D(x,y,u,v)=[x=v][y=u],
+\]
+where brackets denote indicators.
+
+Appendix~B, Theorem~B, constructs an integer \(h=O(\lambda^2)\),
+integer-valued functions
+\[
+  A_s(x,y,u,v),\qquad -2h\leq s\leq 2h,
+\]
+and a nonzero integer \(d=h!\) such that
+\begin{equation}
+  dD(x,y,u,v)=\sum_{s=-2h}^{2h}A_s(x,y,u,v).
+  \label{eq:decomposition}
+\end{equation}
+Moreover, each \(A_s\) admits two factorizations. The first separates
+\((x,y)\) from \((u,v)\):
+\begin{equation}
+  A_s(x,y,u,v)
+  =\sum_{q=1}^{R_s}f_{s,q}(x,y)g_{s,q}(u,v).
+  \label{eq:row}
+\end{equation}
+The second separates \((x,u)\) from \((y,v)\):
+\begin{equation}
+  A_s(x,y,u,v)
+  =\sum_{q=1}^{C_s}
+    \widetilde f_{s,q}(x,u)\widetilde g_{s,q}(y,v).
+  \label{eq:column}
+\end{equation}
+The factors are integer-valued, and the positive factorization lengths
+satisfy
+\begin{equation}
+  \log_2 R_s+\log_2 C_s
+  \leq 2\sqrt{2}\,\lambda+O\!\left(\log(2\lambda)\right),
+  \label{eq:rank}
+\end{equation}
+uniformly in \(s\). This follows from the bound on the rounded-up binary
+logarithms in Appendix~B, equation~(56), derived using the Hardy--Ramanujan
+asymptotics for integer partitions. The \(O(\log(2\lambda))\) term agrees
+with \(O(\log\lambda)\) asymptotically and also covers \(\lambda=1\).
+
+\section{Choosing the cheaper factorization}
+
+For each \(s\), use whichever of \eqref{eq:row} and \eqref{eq:column}
+contains fewer terms. By \eqref{eq:rank},
+\[
+  \min(R_s,C_s)
+  \leq \sqrt{R_sC_s}
+  \leq 2^{\sqrt{2}\lambda+O(\log(2\lambda))}.
+\]
+Since \(N=2^\lambda\), this gives
+\begin{equation}
+  \min(R_s,C_s)
+  \leq N^{\sqrt{2}}(\log N)^{O(1)}.
+  \label{eq:minimum}
+\end{equation}
+
+There are \(4h+1=O(\lambda^2)\) values of \(s\). Expanding each \(A_s\)
+using its cheaper orientation and dividing \eqref{eq:decomposition} by
+\(d\) therefore expresses \(D\) as a sum of \(L\) rational rank-one
+functions, each separated in one of the two orientations, where
+\begin{equation}
+  L=O\!\left(N^{\sqrt{2}}(\log N)^C\right)
+  \label{eq:length}
+\end{equation}
+for an absolute constant \(C\). By the definition in Appendix~G, this proves
+\begin{equation}
+  P(N)\leq L\leq N^{\sqrt{2}+o(1)}.
+  \label{eq:crossing-bound}
+\end{equation}
+
+\section{From crossing factorizations to bilinear products}
+
+Multiply \eqref{eq:decomposition}, after division by \(d\), by
+\(a_xb_ya_vb_u\), and sum over all \(x,y,u,v\in[N]\). The left-hand side
+becomes
+\begin{equation}
+  \sum_{x,y,u,v}[x=v][y=u]\,a_xb_ya_vb_u
+  =\left(\sum_xa_x^2\right)\left(\sum_yb_y^2\right).
+  \label{eq:contraction}
+\end{equation}
+
+For a rank-one term in orientation \eqref{eq:row}, namely
+\(f(x,y)g(u,v)\), the corresponding contribution, before normalization by
+\(d\), is
+\[
+  \left(\sum_{x,y}f(x,y)a_xb_y\right)
+  \left(\sum_{u,v}g(u,v)b_ua_v\right),
+\]
+a product of two bilinear forms. For a rank-one term in orientation
+\eqref{eq:column}, namely
+\(\widetilde f(x,u)\widetilde g(y,v)\), the contribution is
+\[
+  \left(\sum_{x,u}\widetilde f(x,u)a_xb_u\right)
+  \left(\sum_{y,v}\widetilde g(y,v)b_ya_v\right).
+\]
+This is again a product of two bilinear forms.
+
+Hence \eqref{eq:decomposition} gives an identity
+\begin{equation}
+  \boxed{
+  \left(\sum_{i=1}^{N}a_i^2\right)
+  \left(\sum_{j=1}^{N}b_j^2\right)
+  =\sum_{q=1}^{L}F_q(a,b)G_q(a,b),
+  }
+  \label{eq:products}
+\end{equation}
+where all \(F_q,G_q\) are rational bilinear forms and
+\(L\leq N^{\sqrt{2}+o(1)}\). The normalization factor \(1/h!\) is absorbed
+into one factor of each product.
+
+\section{Conversion to complex sums of squares}
+
+For any bilinear forms \(F,G\) over \(\QQ\), the identity
+\begin{equation}
+  FG=
+  \left(\frac{F+G}{2}\right)^2
+  +\left(\frac{\ii(F-G)}{2}\right)^2
+  \label{eq:polarization}
+\end{equation}
+holds over \(\CC\), where \(\ii^2=-1\). Both expressions inside the
+squares remain bilinear forms in \(a,b\).
+
+Applying \eqref{eq:polarization} to every term of \eqref{eq:products}
+produces a sum of at most \(2L\) squares of complex bilinear forms. Thus
+\[
+  M_{\CC}(N)\leq 2L
+  =O\!\left(N^{\sqrt{2}}(\log N)^C\right).
+\]
+In fact, the coefficients produced lie in \(\QQ(\ii)\).
+
+For arbitrary \(N\), choose \(\lambda=\lceil\log_2N\rceil\), apply the
+construction to \(2^\lambda\) variables, and set the excess variables to
+zero. Since \(N\leq 2^\lambda<2N\), the same asymptotic bound follows.
+Restricting all four tensor indices to \([N]\) likewise gives the bound
+for \(P(N)\). This proves Theorem~\ref{thm:main}.
+
+\section{Comparison with prior work}
+
+Hrube\v{s} established an \(O(N^{1.62})\) upper bound for complex bilinear
+sum-of-squares composition formulas in \emph{A Subquadratic Upper Bound on
+Sum-Of-Squares Composition Formulas} (CCC 2024) \cite{hrubes2024},
+subsequently developed in \emph{A Subquadratic Upper Bound on Hurwitz's
+Problem and Related Noncommutative Polynomials} (2026)
+\cite{hrubes2026}. Related connections to noncommutative circuits appear
+in \cite{hwy2011}.
+
+The construction above gives
+\[
+  \sqrt{2}\approx 1.41421356<1.62,
+\]
+so, under the stated hypotheses, it improves the exponent by
+approximately \(0.206\).
+
+This conclusion is conditional only on the correctness of the algebraic
+identities and uniform rank-factorization estimates in the
+Claude/Anthropic manuscript. It does not rely on that manuscript's SAT
+algorithm, recursive running-time analysis, or formalization of the
+Exponential Time Hypothesis (ETH). This note proves the implication from
+the stated algebraic hypotheses; it does not independently establish
+those hypotheses or the claimed SAT running time.
+
+\section{Remarks and attribution}
+
+\paragraph{Rational versus complex coefficients.}
+Equation~\eqref{eq:products} holds over \(\QQ\), as the Appendix~B factors
+are integer-valued before normalization.
+Equation~\eqref{eq:polarization} uses \(\ii=\sqrt{-1}\), so the asserted
+upper bound for sums of squares is over \(\CC\). It does not establish a
+sum-of-squares identity of the same size over \(\RR\) or \(\QQ\).
+
+\paragraph{Relation to Naslund's problem.}
+Equation~\eqref{eq:crossing-bound} strengthens, under the stated
+hypotheses, the upper bound for \(P(N)\) discussed in Appendix~G.
+Naslund's partition-rank work is \cite{naslund2020}. The conversion to
+bilinear products and then complex squares establishes a separate
+consequence for Hurwitz's composition problem.
+
+\paragraph{Attribution.}
+The construction is that of Appendix~B of Claude's manuscript for
+Anthropic. The observation here is that its two-sided
+factorization estimate implies a stronger bound for \(P(N)\) and for
+complex sum-of-squares composition formulas.
+
+\begin{thebibliography}{9}
+\setlength{\itemsep}{0.35em}
+
+\bibitem{claude}
+Claude (Anthropic).
+\emph{A \(2^{o(n)}\) Time Algorithm for 3-SAT}.
+Manuscript dated 26 October 2026.
+Appendix~B, Theorem~B, equations (53)--(56); Appendix~G.
+\href{https://github.com/anthropics/formal-math/blob/16a5ce41304fcdaea4e0be7c132e1c361dc26da5/eth/paper.pdf}
+{Version in \texttt{anthropics/formal-math}, commit \texttt{16a5ce4}}.
+
+\bibitem{hrubes2024}
+Pavel Hrube\v{s}.
+\emph{A Subquadratic Upper Bound on Sum-Of-Squares Composition Formulas}.
+In \emph{39th Computational Complexity Conference (CCC 2024)},
+LIPIcs 300, Article 12, pp.~12:1--12:11, 2024.
+\href{https://doi.org/10.4230/LIPIcs.CCC.2024.12}
+{doi:10.4230/LIPIcs.CCC.2024.12}.
+
+\bibitem{hrubes2026}
+Pavel Hrube\v{s}.
+\emph{A Subquadratic Upper Bound on Hurwitz's Problem and Related
+Noncommutative Polynomials}.
+\emph{SIAM Journal on Computing} 55(2), 451--467, 2026.
+\href{https://doi.org/10.1137/24M1666884}{doi:10.1137/24M1666884}.
+
+\bibitem{hwy2011}
+Pavel Hrube\v{s}, Avi Wigderson, and Amir Yehudayoff.
+\emph{Non-commutative Circuits and the Sum of Squares Problem}.
+\emph{Journal of the American Mathematical Society} 24(3), 871--898, 2011.
+\href{https://doi.org/10.1090/S0894-0347-2011-00694-2}
+{doi:10.1090/S0894-0347-2011-00694-2}.
+
+\bibitem{naslund2020}
+Eric Naslund.
+\emph{The Partition Rank of a Tensor and \(k\)-Right Corners in
+\(\mathbb F_q^n\)}.
+\emph{Journal of Combinatorial Theory, Series A} 174, Article 105190, 2020.
+\href{https://doi.org/10.1016/j.jcta.2019.105190}
+{doi:10.1016/j.jcta.2019.105190}.
+
+\end{thebibliography}
+\end{document}
