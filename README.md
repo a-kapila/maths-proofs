@@ -35,7 +35,7 @@ The 6 November 2026 manuscript claims bounds H₂ ≤ 19,844, H₃ ≤ 1,357,780
 - [LaTeX source](prime-gaps/prime_gap_verified_proof.tex)
 - [Certificates, logs, and reproduction code (ZIP, about 76 MiB)](prime-gaps/prime_gap_verified_certificates.zip)
 
-The Busy Beaver materials were supplied by Avi Eisenberg on 30 October 2026; the prime-gap materials were supplied by him on 6 November 2026. The original manuscripts and supplied files are preserved unchanged. This records their provenance, not an assertion of authorship. These summaries describe the manuscripts' claims; this repository upload does not independently validate their proofs, and no supplied code was executed during the upload.
+The original manuscripts and supplied files are preserved unchanged. These summaries describe the manuscripts' claims; this repository upload does not independently validate their proofs, and no supplied code was executed during the upload.
 
 ## Review and reproduction
 
