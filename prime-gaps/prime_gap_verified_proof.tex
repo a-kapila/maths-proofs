@@ -1,0 +1,1388 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=24mm,headheight=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,tabularx,xcolor,fancyhdr,enumitem,needspace}
+\usepackage{hyperref,bookmark,listings,upquote}
+\definecolor{ink}{HTML}{18354A}
+\definecolor{accent}{HTML}{176B76}
+\definecolor{soft}{HTML}{EEF4F5}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+ pdftitle={Finite prime gaps from weighted Selberg sieves and pair penalties},
+ pdfauthor={},
+ pdfsubject={Bounds for H2, H3, H4 and H5, proof and numerical certificates}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlist{nosep,leftmargin=1.6em}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}Finite prime gaps}
+\fancyhead[R]{\small 6 November 2026}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\newcommand{\R}{\mathbb R}\newcommand{\N}{\mathbb N}
+\newcommand{\ind}{\mathbf 1}\newcommand{\dd}{\,d}
+\newcommand{\DHL}{\operatorname{DHL}}
+\newcommand{\Li}{\operatorname{Li}_2}
+\newcommand{\av}{\operatorname{av}}
+\newcommand{\pathf}[1]{\texttt{\path{#1}}}
+\newcommand{\smalltable}{\small\setlength{\tabcolsep}{5pt}}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,
+ keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{soft},
+ backgroundcolor=\color{soft},xleftmargin=5pt,xrightmargin=5pt}
+\numberwithin{equation}{section}
+
+\begin{document}
+\title{Finite prime gaps from weighted Selberg sieves\\and pair penalties}
+\author{\vspace{-1.2em}}
+\date{6 November 2026}
+\maketitle
+\begin{abstract}
+Let $H_m=\liminf_{n\to\infty}(p_{n+m}-p_n)$. We develop a pair-penalty refinement of a multidimensional Selberg sieve, together with explicit admissible tuples and interval-arithmetic evaluations. A mixed prime--divisor asymptotic is derived from distribution on triply densely divisible moduli. Combining it with the numerical certificates gives
+\[
+H_2\le19\,844,\qquad H_3\le1\,357\,780,\qquad
+H_4\le82\,234\,788,\qquad H_5\le4\,830\,355\,416.
+\]
+The proof combines truncated marginal estimates, support-loss bounds for signed trial functions, a trace-preserving auxiliary sieve for prime pairs, and exact modular certificates. Exact finite data, interval enclosures, and reproducibility code accompany the manuscript.
+\end{abstract}
+\begingroup\setlength{\parskip}{0pt}\small\tableofcontents\endgroup
+\clearpage
+
+\section{Main results}\label{sec:results}
+Let $p_n$ be the $n$th prime and
+\[
+ H_m=\liminf_{n\to\infty}(p_{n+m}-p_n).
+\]
+An upper bound $H_m\le D$ means that infinitely many intervals of length $D$ contain at least $m+1$ primes. The final deductions in this document are
+\begin{equation}\label{eq:main}
+ \boxed{H_2\le19\,844,\quad H_3\le1\,357\,780,\quad
+ H_4\le82\,234\,788,\quad H_5\le4\,830\,355\,416.}
+\end{equation}
+The proof uses the source dimensions and pair counts in the following table.
+
+\begin{center}\smalltable
+\begin{tabular}{@{}lrrrr@{}}\toprule
+ & Source dimension $k$ & Selected size $K$ & Cluster span $D$ & Long pairs $B_D$\\\midrule
+$H_2$ & 2\,305 & 2\,305 & 19\,844 & 7\\
+$H_3$ & 110\,070 & 110\,070 & 1\,357\,780 & 3\,639\\
+$H_4$ & 5\,090\,000 & 5\,089\,150 & 82\,234\,788 & 4\,076\,241\\
+$H_5$ & 232\,500\,000 & 232\,465\,000 & 4\,830\,355\,416 & 3\,267\,409\,565\\\bottomrule
+\end{tabular}\end{center}
+
+The final spans are \emph{not} the diameters of the entire tuples. A pair penalty proves that the required number of prime entries occurs in a shorter part of a wider tuple. The first two results use fixed symmetric trials and a four-moment pair estimate. The last two use source-averaged coordinate slicing and a radial pair estimate.
+
+\begin{theorem}[Finite-gap bounds]\label{thm:main}
+The bounds in~\eqref{eq:main} hold. Their proof uses the explicitly stated distribution theorem in Theorem~\ref{thm:distribution} and the computer-assisted enclosures and finite certificates established below.
+\end{theorem}
+
+
+
+\paragraph{Proof architecture.}
+The support theorem supplies nonnegative weights with a weighted prime-count lower bound. A trace-preserving auxiliary square supplies an upper bound for a specified prime pair. A finite combinatorial inequality converts those two bounds into a cluster statement. Fourier moment enclosures and support-removal bounds supply the numerical inputs. Finally, explicit missing residues establish tuple admissibility, and exact integer counts determine the pair penalty.
+
+The proof of Theorem~\ref{thm:main} is completed in Section~\ref{sec:deductions}.
+
+\section{Notation and prime-distribution estimates}\label{sec:setup}
+\begin{definition}
+An increasing integer tuple $\mathcal H=(h_1,\ldots,h_K)$ is \emph{admissible} if, for each prime $p$, some residue modulo $p$ is missed by every $h_i$. It suffices to check $p\le K$. The assertion $\DHL[K,j]$ says that every admissible $K$-tuple has infinitely many translates containing at least $j$ primes.
+\end{definition}
+
+For a real, compactly supported square-integrable function on the nonnegative orthant, set
+\begin{align}
+ I(F)&=\int F(t)^2\dd t, & M_iF(t_{-i})&=\int_0^\infty F(t)\dd t_i,\\
+ J_{i,a}(F)&=\int_{\sum_{j\ne i}t_j\le a}(M_iF)^2\dd t_{-i}, &
+ Q_{k,\epsilon}(F)&=\frac{\sum_iJ_{i,1-\epsilon}(F)}{I(F)}.\label{eq:quotient}
+\end{align}
+All trials in the numerical record are real and symmetric. Their polynomial coefficients may have either sign.
+
+Choose $\delta_s,\omega>0$ and put
+\begin{equation}\label{eq:arithmetic}
+ \rho=\tfrac14+\omega,\qquad 240\omega+80\delta_s<3,\qquad
+ u_0<\delta_s/\rho,\qquad \kappa<(1/4+\delta_s/2)/\rho.
+\end{equation}
+Write $\sigma=1+\epsilon$, $\tau=1-\epsilon$, where $0\le\epsilon<1$ and $2\rho\sigma<1$. Define
+\begin{equation}\label{eq:region}
+\mathcal R_k(\sigma;u_0,\kappa)=
+\left\{t\ge0:\ \sum_i t_i\le\sigma,\quad
+\tfrac32v+\sum_{i:t_i\ge v}t_i\le\kappa\quad
+(u_0<v\le\max_i t_i)\right\}.
+\end{equation}
+This is a down-set: reducing coordinates cannot violate an inequality at a fixed threshold. Deleting coordinates also preserves the region. Shrinking the vector produces strict support slack before smooth approximation.
+
+\subsection{External distribution theorems and normalization}
+Let $\mathcal H=(h_1,\ldots,h_k)$ be fixed and admissible. Put
+\[
+ w=\log\log\log X,\qquad W=\prod_{p\le w}p,\qquad
+ B=\frac{\varphi(W)}W\log X,\qquad \mathcal N_X=B^{-k}\frac XW.
+\]
+All limits below are taken with the tuple, dimension, profiles, and positive support margins fixed. For sufficiently large $X$, every prime divisor of a nonzero $h_i-h_j$ divides $W$. Choose $b_0\pmod W$ with $(b_0+h_j,W)=1$ for every $j$. Write $P(n)=\ind_{\{n\text{ is prime}\}}$ and
+\[
+ \Delta(f;a,q)=\sum_{n\equiv a\ (q)}f(n)
+ -\frac1{\varphi(q)}\sum_{(n,q)=1}f(n),\qquad (a,q)=1.
+\]
+For a smooth compactly supported function $f$ on the nonnegative orthant define
+\[
+ A_f(n)=\sum_{d_j\mid n+h_j}\mu(d_1)\cdots\mu(d_k)
+ f(\log_Xd_1,\ldots,\log_Xd_k).
+\]
+
+\begin{definition}[Strong multiple dense divisibility]\label{def:dd}
+For $Y\ge2$ put $\mathcal D^{(0)}(Y)=\N$. Recursively, $n\in\mathcal D^{(r)}(Y)$ if, for every $j,l\ge0$ with $j+l=r-1$ and every $1\le R\le Yn$, there is a factorization
+\[
+ n=uv,\qquad R/Y\le v\le R,\qquad
+ u\in\mathcal D^{(j)}(Y),\quad v\in\mathcal D^{(l)}(Y).
+\]
+This is the strong, or starred, version of multiple dense divisibility.
+\end{definition}
+
+The arithmetic input beyond the classical distribution range is the following precise result. The residue class is fixed \emph{outside} the modulus sum.
+\begin{theorem}[Prime distribution on triply densely divisible moduli]\label{thm:distribution}
+Let $\omega,\delta>0$ satisfy $240\omega+80\delta<3$. For every fixed $A,\varepsilon>0$, every finite set of primes $I$, and every primitive class $a\pmod {P_I}$, where $P_I=\prod_{p\in I}p$, one has
+\begin{equation}\label{eq:dddistribution}
+ \sum_{\substack{q\le X^{1/2+2\omega-\varepsilon}\\q\mid P_I,\ q\in\mathcal D^{(3)}(X^\delta)}}
+ |\Delta(P\ind_J;a,q)|\ll_{A,\varepsilon,\omega,\delta}X(\log X)^{-A}.
+\end{equation}
+The estimate is uniform in $I$, $a$, and intervals $J\subseteq[X,2X)$.
+\end{theorem}
+This is \cite[Corollary~2.19, $r=3$, with (2.5)]{shortgaps}, using the definition in \cite[Definition~2.1]{shortgaps}. The cited preprint proves the triply densely divisible bilinear extension in its Proposition~2.18 and Appendix~A.4. Stadlmann's smooth-modulus proposition alone is not the form used here \cite[Proposition~1 and \S2.1.1]{stadlmann}.
+
+We also use the classical Bombieri--Vinogradov theorem in the form
+\begin{equation}\label{eq:bv}
+ \sum_{q\le X^{1/2-\varepsilon}}\max_{(a,q)=1}
+ |\Delta(P\ind_J;a,q)|\ll_{A,\varepsilon}X(\log X)^{-A},
+\end{equation}
+uniformly for subintervals $J\subseteq[X,2X)$; see \cite[Theorem~2.3]{polymath}. Partial summation gives the prime-indicator formulation. Unlike \eqref{eq:dddistribution}, this estimate permits the maximum over all primitive classes inside the sum.
+
+Two standard Selberg facts are used. For fixed one-variable smooth functions $f_j,g_j$ and $r$ coordinates, Polymath's Euler-product calculation \cite[Lemma~4.1]{polymath} gives
+\begin{equation}\label{eq:euler}
+ \sum_{\boldsymbol d,\boldsymbol e}^{*}
+ \prod_{j=1}^{r}
+ \frac{\mu(d_j)\mu(e_j)f_j(\log_Xd_j)g_j(\log_Xe_j)}
+ {\varphi([d_j,e_j])}
+ =\bigl(c+o(1)\bigr)B^{-r},
+ \quad c=\prod_{j=1}^{r}\int_0^\infty f_j'(t)g_j'(t)\dd t.
+\end{equation}
+The star means that the $[d_j,e_j]$ are pairwise coprime and coprime to $W$. The same statement holds with $[d_j,e_j]$ in place of $\varphi([d_j,e_j])$. Consequently, for fixed finite tensor sums whose paired coordinate-support sums are below one,
+\begin{equation}\label{eq:unweighted}
+ \sum_{\substack{X\le n<2X\\n\equiv b_0\ (W)}} A_f(n)A_g(n)
+ =\mathcal N_X\left(\int (\partial_1\cdots\partial_k f)
+ (\partial_1\cdots\partial_k g)+o(1)\right).
+\end{equation}
+This is also \cite[Theorem~3.6(i)]{polymath}. The pairing condition is verified term by term when these facts are applied.
+
+\subsection{A prime-factor criterion and the least-common-multiple support}
+For a squarefree integer $n$, write $n_{<p}=\prod_{\ell\mid n,\,\ell<p}\ell$ and $n_{\ge p}=n/n_{<p}$.
+\begin{lemma}[Prime-factor criterion]\label{lem:factor-test}
+Suppose $n$ is squarefree and
+\begin{equation}\label{eq:factor-test}
+ p^r\le Y n_{<p}\qquad(p\mid n,\ p>Y).
+\end{equation}
+Then $n\in\mathcal D^{(r)}(Y)$.
+\end{lemma}
+\begin{proof}
+This is the squarefree case of \cite[Theorem~2]{sarajian}; we give its factorization argument. Let $\mathcal C_r(Y)$ denote the squarefree integers satisfying \eqref{eq:factor-test}, and let $\mathcal C_0(Y)$ be all squarefree integers. We first show that, for $j+l=r-1$ and $1\le R\le Yn$, an $n\in\mathcal C_r(Y)$ factors as $uv$, with $u\in\mathcal C_j(Y)$, $v\in\mathcal C_l(Y)$ and $R/Y\le v\le R$.
+
+Induct on the number of prime factors. If all primes are at most $Y$, successive initial prime products, starting at $1$, have ratios at most $Y$. They provide the required divisor $v$ (take $v=n$ if $R\ge n$); both factors are $Y$-smooth and belong to every $\mathcal C_j(Y)$.
+
+Otherwise write $n=mp$, with $p>Y$ its largest prime. Then $m\in\mathcal C_r(Y)$ and $p^r\le Ym$. If $R\le Ym/p^j$, apply the induction hypothesis to $m$ at target $R$, obtaining $m=uv$. As $v\le R$,
+\[
+ u=m/v\ge m/R\ge p^j/Y.
+\]
+Thus adjoining the largest prime $p$ to $u$ preserves the defining inequality for $\mathcal C_j(Y)$; when $j=0$ there is no condition to check.
+
+If $R>Ym/p^j$, apply induction at target $R/p$. This target lies in $[1,Ym]$, because $R/p>Ym/p^{j+1}\ge p^l\ge1$ and $R\le Ymp$. The resulting $m=uv$ has
+\[
+ v\ge R/(pY)>m/p^{j+1}\ge p^l/Y.
+\]
+Adjoin $p$ to $v$ instead. In either case the required factorization of $n$ follows. Induction on $r$, applied to the two smaller orders $j,l$, now gives $\mathcal C_r(Y)\subseteq\mathcal D^{(r)}(Y)$.
+\end{proof}
+
+\begin{lemma}[Tail supports force admissible moduli]\label{lem:lcm}
+Fix $0<c<1/4$. Let $s_1,\ldots,s_r,t_1,\ldots,t_r\ge0$ satisfy
+\begin{align}
+ \sum_j(s_j+t_j)&\le\tfrac12+2\omega-c,\label{eq:total-box}\\
+ \tfrac32u+\sum_{s_j\ge u}s_j&\le\tfrac14+\tfrac\delta2-c
+ \quad(\delta<u\le\max_j s_j),\label{eq:left-box}\\
+ \tfrac32u+\sum_{t_j\ge u}t_j&\le\tfrac14+\tfrac\delta2-c
+ \quad(\delta<u\le\max_j t_j).\label{eq:right-box}
+\end{align}
+Suppose $d_j\le X^{s_j}$ and $e_j\le X^{t_j}$, with the $d_j,e_j$ squarefree and their coordinate least common multiples pairwise coprime and coprime to $W$. Put
+\[
+ D=\prod_jd_j,\quad E=\prod_je_j,\quad Q=[D,E],\quad q=WQ.
+\]
+For all sufficiently large $X$, either $q\le X^{1/2-c/2}$, or
+\[
+ q\le X^{1/2+2\omega-c/2},\qquad q\in\mathcal D^{(3)}(X^\delta).
+\]
+\end{lemma}
+\begin{proof}
+Set $Y=X^\delta$ and $A=X^{1/4+\delta/2-c}$. Always
+$Q\le DE\le X^{1/2+2\omega-c}$. If $Q\le X^{1/2-c}$, the first alternative follows from $W=X^{o(1)}$.
+
+Suppose instead $Q>X^{1/2-c}$. Fix a prime $p\mid Q$ with $p>Y$, and put $u=\log_Xp>\delta$. If $\max_j s_j\ge u$, all coordinate divisors contributing to $D_{\ge p}$ have $s_j\ge u$, and \eqref{eq:left-box} gives
+\[
+ p^{3/2}D_{\ge p}\le X^{\frac32u+\sum_{s_j\ge u}s_j}\le A.
+\]
+The corresponding statement follows for $E$ from \eqref{eq:right-box}. If, for example, $\max_jt_j<u$, then $E_{\ge p}=1$; the inequality $p^{3/2}\le A$ follows from the root containing $p$. Thus both inequalities hold, even when $D$ and $E$ share primes. Hence
+\[
+ p^3Q_{\ge p}\le p^3D_{\ge p}E_{\ge p}
+ \le A^2=X^{1/2+\delta-2c},
+\]
+so
+\begin{equation}\label{eq:density-key}
+ p^3\le X^{\delta-c}Q_{<p}<X^\delta Q_{<p}.
+\end{equation}
+All primes of $W$ are smaller than $Y$. Therefore, for $p>Y$ dividing $q$, one has $p\mid Q$ and $q_{<p}\ge Q_{<p}$. The squarefree integer $q$ satisfies Lemma~\ref{lem:factor-test}, proving its triple dense divisibility. The upper bound for $q$ again absorbs $W$ into half the fixed margin.
+\end{proof}
+
+\subsection{Divisor weights and compatible residue classes}
+\begin{lemma}[Fixed divisor powers]\label{lem:divisor-weight}
+Let $\mathcal Q_X$ consist of squarefree $q\le X^\vartheta$, with fixed $\vartheta<1$. Suppose nonnegative discrepancies $E(q)$, uniform in any auxiliary choices, satisfy
+\[
+ \sum_{q\in\mathcal Q_X}E(q)\ll_A X(\log X)^{-A}
+ \quad\text{for every fixed }A>0,
+ \qquad E(q)\ll X/\varphi(q).
+\]
+Then the same arbitrary logarithmic saving holds after multiplication by $\tau(q)^C$, for any fixed $C\ge0$.
+\end{lemma}
+\begin{proof}
+The elementary bound
+\[
+ \sum_{\substack{q\le X^\vartheta\\q\text{ squarefree}}}
+ \frac{\tau(q)^{2C}}{\varphi(q)}
+ \le\prod_{p\le X^\vartheta}\left(1+\frac{2^{2C}}{p-1}\right)
+ \ll_C (\log X)^{C_1}
+\]
+holds for some fixed $C_1$. Cauchy--Schwarz therefore gives
+\[
+ \left(\sum\tau(q)^CE(q)\right)^2
+ \le\left(\sum E(q)\right)\left(\sum\tau(q)^{2C}E(q)\right)
+ \ll X^2(\log X)^{-A+C_1}.
+\]
+Choose $A$ larger than twice the desired exponent plus $C_1$. For prime-indicator discrepancies, the trivial bound follows from counting progression terms and $q<X$: $E(q)\ll X/q+1+X/\varphi(q)\ll X/\varphi(q)$.
+\end{proof}
+
+\begin{lemma}[Averaging local residue choices]\label{lem:crt-average}
+Let $M$ be squarefree and choose nonempty sets $\mathcal A_p\subseteq(\mathbb Z/p\mathbb Z)^\times$, with $|\mathcal A_p|\le R$ for fixed $R$. Let $\mathcal A$ be their CRT product modulo $M$, and $m(q)=\prod_{p\mid q}|\mathcal A_p|$ for $q\mid M$. For arbitrary nonnegative $E(q,a)$ and weights $v(q)$,
+\begin{equation}\label{eq:crt-average}
+ \sum_{q\mid M}v(q)\max_{a\in\mathcal A\bmod q}E(q,a)
+ \le\frac1{|\mathcal A|}\sum_{a\in\mathcal A}
+       \sum_{q\mid M}v(q)m(q)E(q,a).
+\end{equation}
+Consequently \eqref{eq:dddistribution} remains applicable to these local choices and fixed divisor weights.
+\end{lemma}
+\begin{proof}
+Every image of $\mathcal A$ modulo $q$ has exactly $|\mathcal A|/m(q)$ preimages. Its maximum discrepancy is at most the sum of the $m(q)$ discrepancies, giving \eqref{eq:crt-average}. Moreover
+\[
+ m(q)\le R^{\nu(q)}=\tau(q)^{\log_2 R}
+\]
+for squarefree $q$ (the case $R=1$ is immediate). Apply Lemma~\ref{lem:divisor-weight} to each fixed global $a$, then average. Uniformity in the global class in Theorem~\ref{thm:distribution} is essential. This is the CRT argument of \cite[Proposition~2.14]{shortgaps}, written in the form needed here.
+\end{proof}
+
+\subsection{The mixed prime--divisor theorem}
+For a one-variable smooth function $f$ put
+\[
+ \lambda_f(m)=\sum_{d\mid m}\mu(d)f(\log_Xd).
+\]
+\begin{theorem}[Mixed bilinear asymptotic]\label{thm:mixed}
+Let $k\ge2$, $i_0\in\{1,\ldots,k\}$, and $\mathcal H$ be fixed and admissible. Let $\omega,\delta>0$ satisfy $240\omega+80\delta<3$. For each $j\ne i_0$, let $f_j,g_j$ be fixed real smooth functions supported in $[0,s_j]$, $[0,t_j]$. Suppose \eqref{eq:total-box}--\eqref{eq:right-box} hold for some fixed $c>0$. Then
+\begin{equation}\label{eq:mixed}
+ \sum_{\substack{X\le n<2X\\n\equiv b_0\ (W)}}
+ P(n+h_{i_0})\prod_{j\ne i_0}
+ \lambda_{f_j}(n+h_j)\lambda_{g_j}(n+h_j)
+ =\mathcal N_X\left(\prod_{j\ne i_0}\int_0^\infty f_j'(t)g_j'(t)\dd t+o(1)\right).
+\end{equation}
+The statement extends by bilinearity to fixed finite tensor sums for which every paired support box satisfies these conditions.
+\end{theorem}
+\begin{proof}
+Decrease $c$ if necessary so that $c<1/4$. Expand the divisor sums. A nonzero term requires that every $d_j,e_j$ be squarefree and coprime to $W$. If a prime divides $[d_j,e_j]$ and $[d_l,e_l]$ for $j\ne l$, it divides $h_j-h_l$, and hence divides $W$ for sufficiently large $X$, a contradiction. Thus surviving coordinate least common multiples are pairwise coprime.
+
+The congruences for $n$ have a unique solution modulo
+\[
+ q=W\prod_{j\ne i_0}[d_j,e_j]=W[D,E].
+\]
+In the prime variable $m=n+h_{i_0}$ this is a primitive class: modulo a prime assigned to coordinate $j$ it is $h_{i_0}-h_j$, which is nonzero, and modulo $W$ it is $b_0+h_{i_0}$. For large $X$, $q\le X^{1/2+2\omega-c/2}<X-O_{\mathcal H}(1)$.
+
+\emph{Error term.} For a fixed $q$, each prime of $q/W$ is assigned to one of $k-1$ coordinates and to one of three patterns (left divisor only, right only, or both). Thus the sum of the absolute coefficient sizes for that $q$ is at most
+\[
+ C_{\boldsymbol f,\boldsymbol g}\,[3(k-1)]^{\nu(q/W)}\ll\tau(q)^{C_2},
+\]
+with fixed $C_2$. On $q\le X^{1/2-c/2}$ use \eqref{eq:bv} and Lemma~\ref{lem:divisor-weight}.
+
+For the remaining moduli, Lemma~\ref{lem:lcm} gives triple dense divisibility. Take $M$ to be the product of all primes at most $X$. At $p\mid W$ choose the singleton $\mathcal A_p=\{b_0+h_{i_0}\pmod p\}$; at $p>w$ choose
+\[
+ \mathcal A_p=\{h_{i_0}-h_j\pmod p:j\ne i_0\}.
+\]
+All these classes are nonzero, and $|\mathcal A_p|\le k-1$. Every compatible CRT class produced by the divisor expansion is an image of their global product. Apply Lemma~\ref{lem:crt-average}, Lemma~\ref{lem:divisor-weight}, and Theorem~\ref{thm:distribution}, with retreat $c/2$. The total error is $O_A(X(\log X)^{-A})$ for every fixed $A$.
+
+The prime interval has endpoints $X+h_{i_0}$ and $2X+h_{i_0}$. Replacing it by $[X,2X)$ changes only $O_{\mathcal H}(1)$ integers. After summing the divisor weights, the resulting error is at most $X^{1/2+2\omega-c/2+o(1)}$, still negligible compared with $X(\log X)^{-A}$ for every fixed $A$. Thus the use of the quoted interval estimate is justified.
+
+\emph{Main term and normalization.} Since every relevant $q$ is smaller than every prime in the interval, the coprimality condition in the principal term removes no primes. The prime number theorem gives a factor $(1+o(1))X/\log X$. Since the coordinate least common multiples and $W$ are pairwise coprime, the resulting main term is
+\[
+ \frac{(1+o(1))X}{\varphi(W)\log X}
+ \sum_{\boldsymbol d,\boldsymbol e}^{*}
+ \prod_{j\ne i_0}
+ \frac{\mu(d_j)\mu(e_j)f_j(\log_Xd_j)g_j(\log_Xe_j)}
+ {\varphi([d_j,e_j])}.
+\]
+Apply \eqref{eq:euler} with $r=k-1$. The normalization is exactly
+\[
+ \frac{X}{\varphi(W)\log X}B^{-(k-1)}
+ =\frac XW B^{-k}=\mathcal N_X.
+\]
+Finally $\mathcal N_X\ge X/(W(\log X)^k)$, with $W$ a power of $\log\log X$ at most. An arbitrary logarithmic saving therefore makes the total error $o(\mathcal N_X)$. This proves \eqref{eq:mixed}. Fixed finite sums follow by bilinearity; no uniformity over a growing family of profiles is needed.
+\end{proof}
+
+\subsection{Support-preserving approximation and the order of limits}\label{subsec:approx-rigorous}
+We record why the tensor-support hypotheses above apply to the piecewise-defined trials. If $t$ belongs to \eqref{eq:region} and $0\le s_i\le t_i+h$, then
+\begin{align*}
+ \sum_i s_i&\le\sigma+kh,\\
+ \tfrac32v+\sum_{s_i\ge v}s_i
+ &\le\kappa+(k+\tfrac32)h
+ \qquad(v>u_0+h).
+\end{align*}
+For the second inequality set $v'=v-h>u_0$. The indices with $s_i\ge v$ satisfy $t_i\ge v'$, and their total can increase by at most $kh$. Thus strict margins persist for all sufficiently small coordinate boxes, including boxes whose supports touch coordinate hyperplanes.
+
+Let $0<\lambda<\rho$ and $G(t)=F(t/\lambda)$. Its support has outer radius $\lambda\sigma$ and satisfies
+\[
+ \tfrac32v+\sum_{t_i\ge v}t_i\le\lambda\kappa
+ \quad(v>\lambda u_0),\qquad
+ \lambda u_0<\delta_s,\quad
+ \lambda\kappa<\tfrac14+\tfrac{\delta_s}2.
+\]
+Choose box size $h$ much smaller than these fixed positive margins. Each upper-corner vector of the covering boxes then satisfies the tail hypotheses of Theorem~\ref{thm:mixed}, with some common $c>0$. Paired boxes can be required to have total support below the relevant total-exponent threshold as well.
+
+Approximate the \emph{mixed derivative} $G$ in $L^2$ by fixed finite sums of products of smooth one-variable functions supported in such boxes. Finite rectangular simple functions are dense in $L^2$ on a bounded set; smoothing their factors on a slightly larger box preserves the chosen strict inequalities. Taking upper-orthant primitives of these tensor sums gives the required finite-tensor sieve profiles. Downward closure ensures that the primitive of a box-supported derivative stays below its upper corner. For symmetric $G$, average the finite approximant over coordinate permutations; this preserves both the support conditions and convergence.
+
+On an outer simplex of radius $R$, Cauchy--Schwarz on each fibre gives
+\[
+ \|M_iH\|_2^2\le R\|H\|_2^2,\qquad
+ \|M_iM_jH\|_2^2\le R^2\|H\|_2^2.
+\]
+Consequently all first-moment quadratic forms used below converge under this approximation. The pair energy with denominator $(b-\sum_{l\ne i,j}t_l)^2$ also converges whenever $b-R>0$, since its reciprocal denominator is uniformly bounded. A finite collection of first-moment and pair inequalities with positive margins is therefore preserved simultaneously by a sufficiently accurate approximant.
+
+The order is: fix the desired positive margin; fix the scale retreat and cutoffs; fix a sufficiently accurate \emph{finite} tensor approximant; then let $X\to\infty$. The number of tensor terms and the dimension never grow with $X$. One need not exchange an infinite approximation limit with the distribution estimate.
+
+\section{The enlarged-support weighted prime count}\label{sec:enlarged}
+\begin{theorem}[Weighted prime count on the tail-restricted region]\label{prop:firstmoment}
+Let $F\ne0$ be a real $L^2$ function supported on \eqref{eq:region}. Assume \eqref{eq:arithmetic}, $0\le\epsilon<1$, and $2\rho(1+\epsilon)<1$. For every admissible $k$-tuple and every $\varepsilon_0>0$, there is a fixed smooth finite-tensor primitive $f$, depending on $\varepsilon_0$, such that the nonnegative weights $w_X(n)=A_f(n)^2$ satisfy
+\begin{equation}\label{eq:first-prime-weight}
+ \liminf_{X\to\infty}
+ \frac{\displaystyle\sum_{\substack{X\le n<2X\\n\equiv b_0\ (W)}}
+ w_X(n)\sum_{i=1}^k P(n+h_i)}
+ {\displaystyle\sum_{\substack{X\le n<2X\\n\equiv b_0\ (W)}}w_X(n)}
+ \ge\rho Q_{k,\epsilon}(F)-\varepsilon_0.
+\end{equation}
+In particular $Q_{k,\epsilon}(F)>m/\rho$ implies $\DHL[k,m+1]$.
+\end{theorem}
+\begin{proof}
+Fix $\lambda<\rho$, sufficiently close to $\rho$, and set $G(t)=F(t/\lambda)$. Scaling numerator and denominator gives
+\begin{equation}\label{eq:scaling-first}
+ \frac{\sum_iJ_{i,\lambda\tau}(G)}{I(G)}
+ =\lambda Q_{k,\epsilon}(F),\qquad \tau=1-\epsilon.
+\end{equation}
+Choose smooth cutoffs $0\le\chi_i\le1$, supported in $\sum_{j\ne i}t_j<\lambda\tau$, which tend to that simplex indicator. Put $K_i=\chi_iM_iG$. Then
+\begin{equation}\label{eq:completion-integral}
+ 2\langle M_iG,K_i\rangle-\|K_i\|_2^2
+ =\int(2\chi_i-\chi_i^2)(M_iG)^2
+ \longrightarrow J_{i,\lambda\tau}(G).
+\end{equation}
+Dominated convergence is applicable because $M_iG\in L^2$. Boundary hyperplanes have measure zero.
+
+The support of $M_iG$ is contained in the projection of the support down-set. Deleting a coordinate preserves all tail inequalities; hence each $K_i$ has the same physical tail bound as $G$, and its outer radius is at most $\lambda\tau$. Apply the approximation procedure in Section~\ref{subsec:approx-rigorous} simultaneously to $G$ and the finitely many $K_i$. Denote the approximants by $G_*,$ $K_{i,*}$ and their upper-orthant primitives by $f$ and $b_i$. Fix them before $X$ tends to infinity. Their support boxes may be chosen so that
+\[
+ 2\operatorname{rad}(f)<1,\qquad
+ \operatorname{rad}(f)+\operatorname{rad}(b_i)<2\rho,\qquad
+ 2\operatorname{rad}(b_i)<2\rho,
+\]
+with strict boxwise tail inequalities at threshold $\delta_s$. These follow respectively from $2\lambda\sigma<1$, $\lambda(\sigma+\tau)=2\lambda<2\rho$, and $2\lambda\tau<2\rho$, after sufficiently small box enlargement.
+
+Write $A(n)=A_f(n)$ and let $B_i(n)$ be the $(k-1)$-coordinate Selberg sum generated by $b_i$, omitting coordinate $i$. On the event that $n+h_i$ is prime, every nonzero coefficient in $A$ forces $d_i=1$: the coordinate support exponent is less than one, whereas $n+h_i\asymp X$. The trace $f|_{t_i=0}$ has mixed derivative $(-1)^{k-1}M_iG_*$. Theorem~\ref{thm:mixed} thus gives
+\begin{align}
+ \frac1{\mathcal N_X}\sum_{n\equiv b_0\ (W)}P(n+h_i)A(n)B_i(n)
+ &\longrightarrow \langle M_iG_*,K_{i,*}\rangle,\label{eq:cross-limit}\\
+ \frac1{\mathcal N_X}\sum_{n\equiv b_0\ (W)}P(n+h_i)B_i(n)^2
+ &\longrightarrow \|K_{i,*}\|_2^2.\label{eq:inner-limit}
+\end{align}
+Here and below the sums run over $X\le n<2X$. The combined support for the first pairing is the outer-plus-inner support, not the generally larger outer-plus-outer support. Equation~\eqref{eq:unweighted} separately gives
+\[
+ \frac1{\mathcal N_X}\sum_{n\equiv b_0\ (W)}A(n)^2\longrightarrow I(G_*)>0.
+\]
+
+For real $A,B_i$ one has $A^2\ge2AB_i-B_i^2$. Multiplying by $P(n+h_i)\ge0$, summing, and using \eqref{eq:cross-limit}--\eqref{eq:inner-limit} proves the prime-count lower bound
+\[
+ \frac{\sum_i(2\langle M_iG_*,K_{i,*}\rangle-\|K_{i,*}\|_2^2)}{I(G_*)}.
+\]
+Choose the finite approximations close enough, the cutoffs close enough to the indicator, and then $\lambda$ close enough to $\rho$ so that \eqref{eq:completion-integral} and \eqref{eq:scaling-first} put this expression above $\rho Q_{k,\epsilon}(F)-\varepsilon_0$. All choices precede the asymptotic limit. This proves \eqref{eq:first-prime-weight}.
+
+If $\rho Q_{k,\epsilon}(F)>m$, choose $\varepsilon_0$ smaller than the surplus. For all sufficiently large $X$, positivity of the weighted average of $\sum_iP(n+h_i)-m$ gives a translate with at least $m+1$ prime entries. Letting $X$ grow proves $\DHL[k,m+1]$.
+\end{proof}
+
+The construction specifies the actual nonnegative weights and their first moment. Pair majorants may therefore be evaluated on those same weights; a bare $\DHL$ assertion would not suffice. The simultaneous approximation statement above permits all finitely many pair bounds and the first-moment lower bound to retain their fixed positive margins.
+
+\section{Exact trial functions and their moment reduction}\label{sec:trials}
+For each source dimension $k$, put
+\begin{equation}\label{eq:g}
+ b_k=k-1,\quad c=\theta/\log k,\quad T=\beta/\log k,\quad
+ a_g=\frac{r_g}{c+b_kT},\qquad
+ g(t)=\left(\frac1{c+b_kt}+a_g\right)\ind_{[0,T]}(t).
+\end{equation}
+The source function is
+\begin{equation}\label{eq:F0}
+ F_0(t)=P(S,Z)\prod_i g(t_i),\quad S=\sum_i t_i,\quad
+ Z_j=\sum_i(t_i/T)^j,\quad
+ P(S,Z)=\sum_{A\in\mathcal B}\psi_A(S)Z_A,
+\end{equation}
+where $Z_A=\prod_{j\in A}Z_j$ and $Z_\varnothing=1$.
+For $m=2,4,5$, the basis is $1,Z_2,Z_3,Z_4,Z_2^2$; for $m=3$ it additionally contains $Z_2Z_3$. Every $\psi_A$ is a signed step function, zero above $\sigma$.
+
+\begin{center}\smalltable
+\begin{tabular}{@{}crrrr@{}}\toprule
+$m$&$\theta$ (display)&$\beta$ (display)&$r_g$ (display)&Active cells\\\midrule
+2&0.9911024435950565&2.9489955673549337&0.05041776295285341&600\\
+3&1.0078753919466732&4.407650476075757&0.24352577574567524&600\\
+4&1.0091809625032768&3.992825439251609&0.35119665467871664&800\\
+5&1.0087090258243432&3.861534563864762&0.24079189841439977&900\\\bottomrule
+\end{tabular}\end{center}
+An initial zero cell is included in addition to the active cells. Heights are dyadic multiples of $2^{-40}$; physical cell edges are the stored integers multiplied by the stored dyadic mesh. The exact trial is the JSON specification identified in Section~\ref{app:registry}, not a rounded table.
+
+\begin{center}\smalltable
+\begin{tabular}{@{}crrrr@{}}\toprule
+$m$&$\delta_s$&$\omega$&$\epsilon$&Quotient mesh\\\midrule
+2&$3.5\cdot10^{-5}$&0.012488332333333333&$1433/2^{18}$&$2^{-25}$\\
+3&$6\cdot10^{-7}$&0.012499799999&$1951/2^{21}$&$2^{-26}$\\
+4&$10^{-7}$&0.012499965&$13/2^{20}$&$2^{-23}$\\
+5&$10^{-7}$&0.012499965&$1/2^{20}$&$2^{-25}$\\\bottomrule
+\end{tabular}\end{center}
+Decimal parameters mean their saved binary64 values, interpreted exactly as rational numbers. In particular, $\rho$ means the exact sum $1/4+\omega$, not a separately rounded floating-point sum. The unrestricted $H_3$ trial does not depend on the arithmetic pair; the support estimate uses the values displayed here.
+
+\subsection{Independent reference law}
+Let $m_2=\int_0^Tg(t)^2\dd t$, and let $X_i$ be independent with density $g^2/m_2$. Write $S_n=\sum_{i=1}^nX_i$ and $Z_{j,n}=\sum_i(X_i/T)^j$. Then
+\[
+ I(F_0)=m_2^k\E[P(S_k,Z_k)^2].
+\]
+A marginal is obtained by replacing each $Z_j$ in $P$ by $Z_j+(t/T)^j$ and integrating against $g(t)\dd t$. If this polynomial in the remaining power sums is $\mathcal P(s,Z)$, then
+\begin{equation}\label{eq:Qexpectation}
+ Q_{k,\epsilon}(F_0)=\frac{k}{m_2}
+ \frac{\E[\ind_{S_{k-1}\le\tau}\mathcal P(S_{k-1},Z_{k-1})^2]}
+ {\E[P(S_k,Z_k)^2]}.
+\end{equation}
+The final measure proportional to the restricted $F^2$ is \emph{not} a product law. Independence is used only to compute the reference-law integrals in this identity and the related positive weighted measures.
+
+\subsection{Positive moment measures}
+Put $\phi(\xi)=\E e^{i\xi X}$ and $\mu_j(\xi)=\E[(X/T)^j e^{i\xi X}]$. For a labelled list $A=(p_1,\ldots,p_r)$, expanding according to equal coordinate indices gives
+\begin{equation}\label{eq:partition}
+\E\left[\prod_{j=1}^r Z_{p_j,n}\,e^{i\xi S_n}\right]
+=\sum_{\pi\in\mathcal P_r}(n)_{|\pi|}\phi(\xi)^{n-|\pi|}
+\prod_{B\in\pi}\mu_{\sum_{j\in B}p_j}(\xi).
+\end{equation}
+Here $(n)_a$ is a falling factorial and $\mathcal P_r$ consists of set partitions of the labelled positions. Repeated exponents do not erase the labels. Each product of power sums is nonnegative, so its weighted cumulative distribution is monotone, even though coefficients multiplying it in $P^2$ may be signed.
+
+The five- and six-term bases generate 14 and 18 distinct weights for each of $n=k-1,k$ in the basic quotient calculation. Extra tagged statistics used in the pair certificates are obtained by inserting labelled factors in~\eqref{eq:partition}. This is a finite one-dimensional Fourier calculation, not integration in $k$ numerical dimensions.
+
+\section{Arithmetic support removal, including signed profiles}\label{sec:loss}
+The numerical quotient is first computed for $F_0$. The sieve uses $F=F_0\ind_{\mathcal R}$, with the appropriate ordinary or tightened region. This restriction cannot increase the denominator, but it can decrease a marginal numerator. Signed profiles require an absolute-value argument.
+
+Let $|P|\le C$ on its support and normalize $p=P/C$. With all but one coordinate fixed, write
+\[
+ M=\int p\,g(t)\dd t,\qquad
+ \Delta=\int p\,g(t)\ind_{\mathrm{removed}}\dd t.
+\]
+Put $G(w)=\int_0^{\min(w,T)}g(t)\dd t$. Then $|M|\le G(T)$ and
+\begin{equation}\label{eq:signedloss}
+ M^2-(M-\Delta)^2=2M\Delta-\Delta^2\le2G(T)|\Delta|.
+\end{equation}
+If $D^-\le\E P^2$ and $D_{\rm del}^+$ bounds the expectation of the deleted marginal envelope, a valid loss is
+\begin{equation}\label{eq:lossbound}
+ L^+=\frac{2kG(T)D_{\rm del}^+}{m_2(D^-/C^2)}.
+\end{equation}
+Whenever the resulting numerator lower bound is positive,
+$Q(F)\ge Q(F_0)^--L^+$. No assumption that $P$ is nonnegative is made.
+
+\subsection{A mass-aware amplitude bound}
+For a profile cell, write $x_i=t_i/T$, $z$ for an upper bound on $\sum_i x_i$, and $U_2=\sum_i x_i^2$. If
+\[
+ P=h_0+h_2U_2+h_3\sum_i x_i^3+h_4\sum_i x_i^4+h_{22}U_2^2,
+\]
+then, for any real $b$, put
+\[
+ a=\max\{0,\max_{0\le x\le1}x(h_2+h_3x+h_4x^2-b)\},\quad
+ U_* =\min\{k,\lfloor z\rfloor+(z-\lfloor z\rfloor)^2\}.
+\]
+Termwise comparison followed by summation gives
+\begin{equation}\label{eq:amplitude}
+ P\le h_0+az+\max_{0\le u\le U_*}(bu+h_{22}u^2).
+\end{equation}
+Indeed, $x_i^2(h_2+h_3x_i+h_4x_i^2-b)\le ax_i$, and convexity bounds $U_2$ by $U_*$. Apply the same formula to $-P$. Optimizers propose $b$; cubic critical points are enclosed and the remaining quadratic extrema are checked exactly. The final $H_2$ amplitude upper endpoint is $2.2072006908045427$. For the six-term family, the general nonnegative-power-sum envelope can be used: $Z_j\le S/T$ and $|Z_A|\le(S/T)^{|A|}$.
+
+\subsection{The joint heavy-count/light-sum bound}
+Under the independent reference law let
+\[
+ N=\#\{i:X_i\ge v\},\qquad R=\sum_{X_i<v}X_i,\qquad
+ p_v=\Prob(X\ge v),\quad d_\lambda=\E[e^{-\lambda X}\ind_{X<v}].
+\]
+For $\lambda\ge0$, expansion according to the heavy-coordinate count gives
+\begin{equation}\label{eq:joint}
+ \Prob(N\ge r,R<B)\le
+ e^{\lambda B}(p_v+d_\lambda)^n
+ \Prob\left(\operatorname{Bin}\left(n,\frac{p_v}{p_v+d_\lambda}\right)\ge r\right).
+\end{equation}
+This follows directly from $\ind_{R<B}\le e^{\lambda(B-R)}$. Each selected tilt is evaluated with interval arithmetic; a floating-point search merely chooses candidates.
+
+For a binomial upper tail, positive summation and a decreasing-ratio bound are used. If
+$a_j=\binom nj q^j(1-q)^{n-j}$ and
+$R_j=(n-j)q/((j+1)(1-q))$, then $R_j$ decreases. Whenever $R_L<1$,
+\begin{equation}\label{eq:binomial}
+ \Prob(\operatorname{Bin}(n,q)\ge r)
+ \le\sum_{j=r}^{L}a_j+\frac{a_LR_L}{1-R_L}.
+\end{equation}
+The remainder is a geometric majorant. The exponential relative-entropy upper bound is supplied when smaller or when the finite-sum case is unsuitable. Binomial tail monotonicity permits replacement of an uncertain $q$ by its upper endpoint.
+
+\subsection{Finite-bin loss for \texorpdfstring{$H_2$}{H2}}
+For a fixed vector, $v\mapsto\tfrac32v+\sum_{t_i\ge v}t_i$ increases between coordinate values and drops immediately after them. Thus a violation above $u_0$ is witnessed at an actual coordinate. A union over triggering coordinates is sufficient.
+
+Use bins $[w,w']$ covering $[u_0,T]$, put $n=k-1$, $A=\tau$, $B=\sigma$, and $c_v=3/2$. Set
+\begin{align*}
+ H&=\kappa-(c_v+1)w',& r&=\lfloor H/T\rfloor+1,\\
+ H_b&=H-T,&r_b&=\lfloor H_b/T\rfloor+1.
+\end{align*}
+Define $P_N(r,b;w)=\Prob(\#\{X_i\ge w\}\ge r,\sum_{X_i<w}X_i<b)$ using $N$ copies. With a positive outward slack added, use
+\begin{align*}
+ b_t&=\min\{A-H,\ B-\kappa+c_vw',\ A-rw,\ B-(r+1)w\},\\
+ b_-&=\min\{A-\kappa+c_vw',\ A-(r+1)w\},\\
+ b_+&=\min\{A-w-H_b,\ B-\kappa+c_vw',\ A-(r_b+1)w,\ B-(r_b+2)w\}.
+\end{align*}
+If the integrated coordinate triggers, the bin contributes at most
+\[
+ [G(w')-G(w)]P_n(r,b_t;w).
+\]
+If a remaining coordinate triggers, the contributions for the integrated coordinate below or above the trigger are bounded by
+\[
+ n[F_X(w')-F_X(w)]
+ \{G(w')P_{n-1}(r,b_-;w)+[G(T)-G(w)]P_{n-1}(r_b,b_+;w)\}.
+\]
+These implications follow by bounding every heavy coordinate by $T$, every heavy coordinate below by $w$, the trigger above by $w'$, and enforcing both sum caps. Marking the trigger leaves independent reference coordinates. Ties and repeated triggers only overcount. Sum the nonnegative bin bounds and apply~\eqref{eq:lossbound}.
+
+The successful $H_2$ calculation uses ratio $1.005$, 1,596 bins, and support slack $10^{-8}$. Its recorded loss is
+\[
+ L_2^+=7.025765102364\cdot10^{-5}.
+\]
+A separate removed-squared-mass bound uses a slightly smaller tail cap and is therefore conservative for the selected region. The pair normalization uses that bound, not the marginal loss itself.
+
+\subsection{Other source losses and removed squared mass}
+For $H_3,H_4,H_5$, the recorded loss implementation uses a finite heavy-count/light-sum decomposition with~\eqref{eq:joint}. On a bin $[w,w']$, put
+$A_a=\kappa-c_vw'$, $A_b=A_a-T$, $r_a=\lfloor A_a/T\rfloor+1$ and $r_b=\lfloor A_b/T\rfloor+1$. The whole-fibre case uses
+\[
+ b_a=\min\{\tau-A_a,\tau-r_aw\},
+\]
+and the partial-fibre case uses
+\[
+ b_b=\min\{\sigma-\kappa+c_vw',\sigma-(r_b+1)w\},
+\]
+with outward positive slack. The total normalized numerator loss is bounded by
+\begin{equation}\label{eq:coarseloss}
+ \frac{k}{m_2(D^-/C^2)}
+ \sum_{\rm bins}\{G(T)^2P_{k-1}(r_a,b_a;w)
+ +2G(T)[G(T)-G(w)]P_{k-1}(r_b,b_b;w)\}.
+\end{equation}
+The first event removes the whole fibre and costs at most $G(T)^2$; the other costs~\eqref{eq:signedloss}. The same implications also give an upper bound on the probability of an inadmissible full vector. Multiplying that probability by $C^2$ gives a removed squared-mass bound $\Delta^+$ under the reference measure.
+
+For the sliced cases the original function is first restricted to thresholds no larger than $u_0/a_*$ and $\kappa/a_*$. The chosen dilation caps are $a_*=10/9$ for $H_4$ and $a_*=4/3$ for $H_5$. The losses, evaluated on these tighter supports, are
+\begin{center}\begin{tabular}{@{}cl@{}}\toprule
+Source&Loss upper endpoint\\\midrule
+$H_3$&$2.300885937222\cdot10^{-46}$\\
+$H_4$&$4.911564057559\cdot10^{-177}$\\
+$H_5$&$2^{-1074}$\\\bottomrule\end{tabular}\end{center}
+The last value is the smallest positive binary64 number, used as an outward positive bound; it is not treated as exact zero. The exact region thresholds, scaled denominators, and all chosen tilts are supplied in the named support certificates. Every arithmetic parameter choice has a corresponding support check.
+
+\section{How the numerical enclosures are obtained}\label{sec:numerics}
+This section gives the numerical argument used by the attached programs. The sources, exact inputs, coefficient intervals, error budgets, and recorded outputs are all embedded. Diagnostics against ordinary quadrature are cross-checks, not replacements for the enclosures described here.
+
+\subsection{One-coordinate transforms and special functions}
+For $b=k-1$, $u=c+bT$, the normalization and primitive are
+\begin{align*}
+ m_2&=\frac{1/c-1/u}{b}+\frac{2a_g}{b}\log(u/c)+a_g^2T,\\
+ G(w)&=\frac1b\log(1+bw/c)+a_gw\qquad(0\le w\le T).
+\end{align*}
+The Fourier integrals of $1$, $(c+bt)^{-1}$ and $(c+bt)^{-2}$ against $e^{i\xi t}$ determine $\phi$. With $a=\xi/b$ and $E=E_1(-iac)-E_1(-iau)$, they are
+\begin{align*}
+ B_0(\xi)&=(e^{i\xi T}-1)/(i\xi),\\
+ B_1(\xi)&=e^{-iac}E/b,\\
+ B_2(\xi)&=\frac{e^{-iac}}b
+ \left(\frac{e^{iac}}c-\frac{e^{iau}}u+iaE\right),\\
+ \phi(\xi)&=(B_2+2a_gB_1+a_g^2B_0)/m_2.
+\end{align*}
+The value at zero is evaluated by its real integral, not division by zero. Higher monomial factors are obtained by polynomial division and integration recurrences; positive and negative exponential moments use the corresponding real exponential integrals.
+
+For small positive $x$, evaluate
+\[
+ E_1(-ix)=-\gamma_E-\log x+i\pi/2-\sum_{n\ge1}\frac{(ix)^n}{n\,n!},\qquad
+ E_1(x)=-\gamma_E-\log x-\sum_{n\ge1}\frac{(-x)^n}{n\,n!}.
+\]
+After index $n$, a valid absolute tail bound is
+\[
+ \frac{x^{n+1}}{(n+1)(n+1)!}\frac1{1-x/(n+2)},\qquad x<n+2.
+\]
+For large $x$, expand $E_1(z)=e^{-z}\int_0^\infty e^{-t}(z+t)^{-1}\dd t$ in inverse powers, with remainder bounded by $N!/x^{N+1}$ on the imaginary ray and by $e^{-x}N!/x^{N+1}$ on the positive ray. The special-function evaluator uses 640-bit endpoint intervals and propagates argument widths by explicit derivative bounds. Elementary endpoint operations and transcendental functions use MPFR 4.2.2 with directed rounding~\cite{mpfr}. The real and complex interval wrappers and the special-function evaluator are supplied as source. All accepted endpoints use this directed MPFR implementation.
+
+\subsection{Positive weighted Fourier inversion}
+For a nonnegative weight $Z_A$, let
+\[
+ C_A(y)=\E[Z_A\ind_{S_n\le y}],\quad m_A=\E Z_A,\quad
+ \Phi_A(\xi)=\E[Z_Ae^{i\xi S_n}].
+\]
+Use period $P_0=8$ and $c_j=\Phi_A(2\pi j/P_0)/(2\pi i j)$. The integrated periodized distribution is
+\begin{equation}\label{eq:periodcdf}
+ C_{A,P_0}(y)=m_Ay/P_0+
+ 2\Re\sum_{j\ge1}c_j(1-e^{-2\pi ijy/P_0}).
+\end{equation}
+For $0\le y<P_0$, positivity gives
+\[
+ 0\le C_{A,P_0}(y)-C_A(y)
+ \le\E[Z_A\ind_{S_n\ge P_0}]
+ \le e^{-\lambda P_0}\E[Z_Ae^{\lambda S_n}],\quad\lambda\ge0.
+\]
+The last expectation is computed by the same partition identity with positive exponential moments. Every candidate tilt is a valid bound.
+
+The omitted series has error at most
+\[
+ \frac2\pi\sum_{j>J}\frac{|\Phi_A(2\pi j/P_0)|}{j}.
+\]
+If $A$ has $r$ factors, then~\eqref{eq:partition} gives
+$|\Phi_A(\xi)|\le m_A|\phi(\xi)|^{n-r}$. This follows because every partition has at most $r$ blocks, its coefficient is nonnegative at zero frequency, and $|\mu_j(\xi)|\le\mu_j(0)$.
+
+For the one-coordinate density $f=g^2/m_2$, use $|\phi'|\le\E X$ on finite frequency cells. Since $f$ decreases, integration by parts on $[a,T]$ gives
+\[
+ |\phi(\xi)|\le F_X(a)+\frac{2f(a)}{|\xi|},\qquad
+ |\phi(\xi)|\le\min\{1,2f(0)/|\xi|\}.
+\]
+The implementation uses conservative versions of these bounds, sums finite Lipschitz and geometric frequency blocks, and bounds the eventual power tail by an integral. Thus choosing $J$ from an exploratory decay test does not by itself certify a tail: the tail is separately bounded.
+
+\subsection{Finite Fourier evaluation and rounding}
+For FFT synthesis, interval trigonometry provides block-base rotation factors. At most 255 ordinary complex multiplications generate intermediate factors, with an absolute rotation-factor error allowance $4096u$, $u=2^{-53}$. A radix-two butterfly allowance $8192u(|a|+|b|)$ bounds rotation and arithmetic errors. After $\ell$ stages, the forward-error budget is
+\begin{equation}\label{eq:fft}
+ \bigl((1+8192u)^\ell-1\bigr)\|c\|_1
+ +(1+8192u)^\ell\|e_{\rm input}\|_1,
+\end{equation}
+plus the separately recorded affine-combination and underflow allowances. No correctly-rounded binary64 sine or cosine is assumed. Native kernels disable fast-math and fused multiply-add contraction where the analysis assumes separate operations.
+
+Fine integration does not require a full enormous FFT. For the finite polynomial
+$f(y)=2\Re\sum_{j=1}^Jc_je^{-2\pi ijy/P_0}$, synthesize scaled derivatives through order seven on a grid of $M=2^{16}$ points. At an intermediate coordinate with fractional position $v\in[0,1]$, the eighth-order remainder is at most
+\begin{equation}\label{eq:taylor}
+ \frac2{8!}\sum_{j=1}^J|c_j|\left(\frac{2\pi j}{M}\right)^8.
+\end{equation}
+This interpolates a known finite Fourier polynomial. The infinite tail, alias mass, coefficient conversion, derivative transforms, and polynomial-evaluation rounding are separate error terms. Requested-point evaluation and disjoint integration chunks change storage, not the physical function or these allowances.
+
+\subsection{Signed integration and exact post-processing}
+For a positive measure with boundary enclosures $L_j\le C(y_j)\le U_j$, the mass of a cell is enclosed by outward subtraction, intersected with nonnegativity. Denominator integrals expand the constant profile coefficients against these positive measures. Numerator coefficient functions are enclosed over each integration subcell using interval primitives of $t^jg(t)$; sign-appropriate products then give lower bounds.
+
+Shared boundaries are combined before applying interval uncertainty. For exact signed coefficients $a_j$,
+\begin{equation}\label{eq:abel}
+\sum_{j=0}^{N-1}a_j(C_{j+1}-C_j)
+=a_{N-1}C_N-a_0C_0+\sum_{j=1}^{N-1}(a_{j-1}-a_j)C_j.
+\end{equation}
+This is an identity, not an assumption that errors are independent. Either this enclosure or the independent-cell enclosure may be used, taking the stronger valid bound. A discarded integration region is omitted only from the complete nonnegative marginal square, never independently from signed components. Disjoint chunk lower bounds are summed with outward arithmetic.
+
+Logarithms used in fast primitive tables are also enclosed: for $x=2^em$, $1\le m<2$, set $z=(m-1)/(m+1)\le1/3$ and use
+\[
+ \log m=2\sum_{j=0}^{19}\frac{z^{2j+1}}{2j+1}+R,\qquad
+ 0\le R\le\frac{2(1/3)^{41}}{41(1-1/9)}.
+\]
+Range reduction is exact and each binary64 arithmetic endpoint is widened outward. General exact post-processing uses integer fractions or directed fixed-point rational intervals. The final acceptance comparison is never an optimizer score.
+
+\subsection{Enclosure of the marginal primitives}
+Let $b=k-1$ and $A=a_g$. For $0\le w\le T$, put
+\[
+ J_p(w)=\int_0^w\frac{t^p}{c+bt}\,dt.
+\]
+Polynomial division gives the exact recurrence
+\[
+ J_0(w)=\frac{\log(1+bw/c)}b,\qquad
+ J_p(w)=\frac{w^p}{bp}-\frac cbJ_{p-1}(w),\qquad
+ G_p(w)=\frac{J_p(w)+Aw^{p+1}/(p+1)}{T^p}.
+\]
+Here $G_p(w)=\int_0^w(t/T)^pg(t)\,dt$ is nonnegative. For a grid index $j$, use $w=\min(T,j\Delta)$. The product $j\Delta$ is exact because $\Delta$ is dyadic and every index is below $2^{53}$.
+
+For $H_2,H_3$, each operation in the displayed recurrence is enclosed by binary64 outward rounding; its logarithm is enclosed by the positive series above. For $H_4,H_5$, a separate C++ evaluator performs every recurrence operation directly at 256-bit MPFR precision, with downward and upward endpoints. Both compute intervals containing the same exact primitives. Intersecting a lower endpoint with zero is valid by nonnegativity. Saturating the grid at $T$ is valid by the support cutoff.
+
+For a step profile with heights $h_j$ and upper boundaries $e_j$, its marginal coefficient is
+\[
+ \sum_j(h_j-h_{j+1})G_p(\max(0,e_j-s)),\qquad h_{N+1}=0.
+\]
+The differences are exact dyadics. On an integration cell, monotonicity of $G_p$ and the sign of each difference select the appropriate endpoint. The native summation error is bounded as in Appendix~\ref{app:numerical-proof}. Thus each resulting coefficient interval encloses its value at \emph{every} point of the cell, not just at the endpoints.
+
+\subsection{The four quotient certificates actually used}
+\begin{center}\smalltable
+\begin{tabular}{@{}crrrr@{}}\toprule
+$m$&$Q_0^-$ before loss&$D^-$&$D^+$&Frequencies $J$\\\midrule
+2&7.61998971086873&$2.4355201057558372\times10^{-3}$&$2.4355201095504417\times10^{-3}$&1217\\
+3&11.42888323139852&$1.6151329419568790\times10^{-5}$&$1.6151330770612735\times10^{-5}$&1522\\
+4&15.23857870587578&$1.5086553494729788\times10^{-4}$&$1.5086553813157408\times10^{-4}$&973\\
+5&19.04804762745625&$2.3360457105217502\times10^{-4}$&$2.3360457387309379\times10^{-4}$&1217\\\bottomrule
+\end{tabular}\end{center}
+Here $D=\E P^2$ under the reference law; the displayed denominator intervals are rounded outward. Exact file endpoints govern all combinations. Refining a quotient mesh preserves the exact physical function and its separately computed denominator enclosures when the registry asserts reuse. Arithmetic-support parameters may change only with a separately recomputed support certificate.
+
+\section{From prime counts to shorter clusters}\label{sec:cluster}
+For an ordered admissible tuple define
+\[
+ B_D(\mathcal H)=\#\{i<j:h_j-h_i>D\}.
+\]
+For a fixed translate, let $X$ count prime entries and $Y_D$ their pairs separated by more than $D$.
+
+\begin{lemma}\label{lem:cluster}
+If no interval of length $D$ contains $m+1$ of the prime entries, then $X-m\le Y_D$.
+\end{lemma}
+\begin{proof}
+Make a graph on the prime entries, with an edge for each pair separated by more than $D$. Select one endpoint of each edge for deletion. At most $Y_D$ vertices are selected. The remaining at least $X-Y_D$ entries have no long pair and hence lie in one interval of length $D$. Their number is at most $m$.
+\end{proof}
+
+If the sieve weights have weighted prime-count lower bound $\rho q-o(1)$ and a specified prime-pair upper bound $C+o(1)$, then
+\begin{equation}\label{eq:paircriterion}
+ \rho q-m>B_D(\mathcal H)C
+\end{equation}
+forces infinitely many $(m+1)$-prime clusters of span $D$. There are finitely many tuple entries and pairs, fixed as $X\to\infty$. All approximation and asymptotic errors can be chosen smaller than the fixed positive margin. This is the basic final criterion for $H_2$ and $H_3$.
+
+\section{The trace-preserving pair majorant}\label{sec:pair}
+\subsection{An auxiliary square with exactly the same prime-pair trace}
+Let $G$ be a smooth physical trial, supported on $t_i\ge0$, $\sum_i t_i\le s<b<1/2$. Fix two coordinates $i,j$. Write $z$ for the others and
+\[
+ v=\sum z_\ell,\qquad R(z)=M_iM_jG(z).
+\]
+The upper-orthant primitive $f$ of $G$ generates the outer Selberg sum. When both selected shifts are prime, their divisor coordinates are forced to be one, so the sum depends only on the trace $f|_{t_i=t_j=0}$.
+
+Choose the full mixed derivative of an auxiliary primitive to be
+\begin{equation}\label{eq:extension}
+ K(z,u,w)=\frac{2R(z)}{(b-v)^2}\ind_{u,w\ge0,\ u+w<b-v}.
+\end{equation}
+Its double integral in $u,w$ is exactly $R(z)$. Its primitive therefore has exactly the same trace as $f$. The corresponding Selberg sums agree on the prime-pair event, and the auxiliary square is a nonnegative majorant of the original square times the two prime indicators. Moreover,
+\[
+ I(K)=2\int\frac{R(z)^2}{(b-v)^2}\dd z.
+\]
+The unweighted square theorem applies because the auxiliary primitive has total support below $1/2$. Dividing by the outer square's asymptotic norm gives the prime-pair bound
+\begin{equation}\label{eq:extensionenergy}
+ C\le\frac{2}{I(G)}\int\frac{(M_iM_jG)^2}{(b-\sum_{\ell\ne i,j}t_\ell)^2}\dd t_{-i,-j}.
+\end{equation}
+No two-prime distribution theorem was used.
+
+\begin{lemma}[Finite tensor approximation with a prescribed pair trace]\label{lem:trace-approximation}
+Fix $0<s<b<b'<1/2$. Let $R(z)$ be a smooth finite tensor sum, supported on $z\ge0$, $\sum z_l\le s$. Suppose a square-integrable $K(z,u,v)$ is supported where $\sum z_l+u+v\le b$, $\sum z_l\le s$, and
+\[
+ \int_0^\infty\!\int_0^\infty K(z,u,v)\dd u\dd v=R(z).
+\]
+Then $K$ can be approximated in $L^2$ by smooth finite tensor sums $H$ supported below total radius $b'$ and satisfying the same trace identity exactly.
+\end{lemma}
+\begin{proof}
+Choose $\eta>0$ with $s+2\eta<b'$. Smooth tensor approximation on boxes gives $H_n^0\to K$ in $L^2$, with total radius below $b'$ and $\sum z_l\le s+\eta$. The double marginal is a bounded map on these supports, so
+\[
+ E_n(z)=R(z)-\int\!\int H_n^0(z,u,v)\dd u\dd v\longrightarrow0
+ \quad\text{in }L^2.
+\]
+Each $E_n$ is a smooth finite tensor sum supported on $\sum z_l\le s+\eta$. Choose fixed smooth one-variable functions $\phi,\psi$ with integrals one, supported in nonnegative intervals whose combined lengths are less than $b'-s-\eta$. Set
+\[
+ H_n(z,u,v)=H_n^0(z,u,v)+E_n(z)\phi(u)\psi(v).
+\]
+The trace is exactly $R$, all supports stay below $b'$, and
+$\|E_n\phi\psi\|_2=\|E_n\|_2\|\phi\|_2\|\psi\|_2\to0$.
+Thus $H_n\to K$ in $L^2$ with the prescribed trace retained.
+\end{proof}
+
+To apply the lemma, take
+\[
+ K(z,u,v)=\frac{2R(z)}{(b-\sum z_l)^2}
+ \ind_{\{u,v\ge0,\ u+v<b-\sum z_l\}}.
+\]
+It is square-integrable because $b-s>0$ and has norm
+\[
+ \|K\|_2^2=2\int\frac{R(z)^2}{(b-\sum z_l)^2}\dd z.
+\]
+Its trace-preserving finite approximants have admissible unweighted-square support. On the prime-pair event their Selberg sums agree exactly with the trace of the fixed outer sum, not merely in an $L^2$ approximation. Apply the unweighted theorem to a fixed approximant, let $X\to\infty$, and only then let its $L^2$ error tend to zero. This proves the auxiliary-pair upper bound with the displayed limiting energy.
+
+\subsection{A quadratic identity for the pair weights}
+Normalize $y_i=t_i/s$, put $x=\sum_i y_i\le1$, and let $a=K\eta>0$ for a $K$-coordinate trial. Define
+\begin{align}
+ W_{ij}&=(1-x+ay_i)(1-x+ay_j)+\frac{a^2}{2K}(y_i-y_j)^2,\label{eq:weights}\\
+ J_K(a)&=\int_{u,w\ge0,\ u+w\le1}
+ \frac{\dd u\dd w}
+ {(1-u-w+au)(1-u-w+aw)+\frac{a^2}{2K}(u-w)^2}.\label{eq:J}
+\end{align}
+The weights are nonnegative and satisfy the exact identity
+\begin{equation}\label{eq:weightsum}
+ \av_{i<j}W_{ij}=(1-x+\eta x)^2.
+\end{equation}
+To check it, use $\sum_{i<j}(y_i-y_j)^2=K\sum_i y_i^2-x^2$ and $\sum_{i<j}y_iy_j=(x^2-\sum_i y_i^2)/2$; the $\sum y_i^2$ terms cancel.
+
+On each two-coordinate fibre, scale its triangle by its remaining radius. Homogeneity makes the reciprocal-weight integral exactly $J_K(a)$. Weighted Cauchy--Schwarz in~\eqref{eq:extensionenergy}, followed by symmetry, yields the stronger unreduced expression
+\begin{equation}\label{eq:fullpair}
+ C\le2\zeta^2J_K(K\eta)
+ \E_\nu\left[\av_{i<j}
+ \frac{W_{ij}}{(1-\zeta x+\zeta(y_i+y_j))^2}\right],
+ \qquad \zeta=s/b,
+\end{equation}
+where $\nu$ has density $G^2/I(G)$.
+Dropping the nonnegative selected-coordinate mass in the denominator and using~\eqref{eq:weightsum} gives
+\begin{equation}\label{eq:radialpair}
+ C\le2\zeta^2J_K(K\eta)\E_\nu R_{\eta,\zeta}(x)^2,
+ \qquad R_{\eta,\zeta}(x)=\frac{1+(\eta-1)x}{1-\zeta x}.
+\end{equation}
+Equation~\eqref{eq:fullpair} is used for the selected $H_2,H_3$ estimates; equation~\eqref{eq:radialpair} is used with slicing for $H_4,H_5$.
+
+\subsection{Exact evaluation of the auxiliary integral}
+Set $\gamma=\sqrt{1-2/K}$. Integrating first in $u-w$ at fixed $t=u+w$ gives
+\[
+ J_K(a)=\int_0^1
+ \frac{4\operatorname{atanh}(a\gamma t/[2+(a-2)t])}
+ {a\gamma[2+(a-2)t]}\dd t.
+\]
+For the selected parameters $a>2$ and $c=a\gamma/(a-2)>1$. Put $L_0=\log c$, $L_1=\log(c-\gamma)$. Substitution gives
+\begin{align}\label{eq:Jclosed}
+J_K(a)=\frac{2}{a\gamma(a-2)}\Big[&\log(c+1)(L_0-L_1)-\tfrac12(L_0^2-L_1^2)\notag\\
+ &+\Li\left(\frac{c-\gamma}{c+1}\right)-\Li\left(\frac{c}{c+1}\right)
+ +\Li\left(\frac{c-1}{c-\gamma}\right)-\Li\left(\frac{c-1}{c}\right)\Big].
+\end{align}
+All four dilogarithm arguments lie in $(0,1)$. The scalar certifier uses directed rational endpoints on a $2^{-256}$ grid, integer square roots, and logarithmic range reduction. For $0\le z<1$,
+\[
+ \Li(z)=\sum_{n=1}^N\frac{z^n}{n^2}+R_N,\qquad
+ 0\le R_N\le\frac{z^{N+1}}{(N+1)^2(1-z)}.
+\]
+Reflection $\Li(z)=\pi^2/6-\log z\log(1-z)-\Li(1-z)$ reduces arguments above $1/2$. Logarithms use the positive atanh series and a geometric tail; $\pi$ is enclosed by Machin's formula and alternating arctangent remainders. These are rational enclosures of~\eqref{eq:Jclosed}, not acceptance by floating-point quadrature.
+
+\section{Four-moment pair certificates for \texorpdfstring{$H_2$}{H2} and \texorpdfstring{$H_3$}{H3}}\label{sec:fourmoments}
+Let $d_0=1-\zeta x>0$ and $z=\zeta(y_i+y_j)/d_0$. The reciprocal denominator in~\eqref{eq:fullpair} is $d_0^{-2}(1+z)^{-2}$. We majorize the last factor with globally valid polynomials, choosing fixed rational parameters separately on radial profile cells.
+
+\subsection{Quadratic fallback and quartic majorant}
+For $\theta\ge0$,
+\begin{align*}
+ (1+z)^{-2}&\le 1-A_\theta z+B_\theta z^2,\\
+ A_\theta&=\frac{2(1+3\theta+\theta^2)}{(1+\theta)^3},\qquad
+ B_\theta=\frac{3+\theta}{(1+\theta)^3}.
+\end{align*}
+Its exact nonnegative remainder is
+\[
+ \frac{z(z-\theta)^2(\theta z+2\theta+3z+4)}{(1+\theta)^3(1+z)^2}.
+\]
+This remains a valid fallback on cells where the extra quartic terms do not improve the enclosure.
+
+For positive rational nodes $a_1,a_2$, put $c_*=1+2/(1+a_1)+2/(1+a_2)$. Define $Q_{a_1,a_2}$ by
+\begin{equation}\label{eq:quartic}
+ Q_{a_1,a_2}(z)-\frac1{(1+z)^2}
+ =\frac{z(z-a_1)^2(z-a_2)^2[c_*(1+z)+1]}
+ {(1+a_1)^2(1+a_2)^2(1+z)^2}\ge0.
+\end{equation}
+After adding $(1+z)^{-2}$, the numerator has a double zero at $z=-1$, so $Q$ is a degree-four polynomial. The factorization proves the upper bound for every $z\ge0$ and every chosen pair of positive nodes. No optimizer optimality claim is needed.
+
+For a direct exact implementation write $s_*=a_1+a_2$, $p_*=a_1a_2$, $D_*=(1+s_*+p_*)^3$, and $Q=1+\sum_{j=1}^4q_jz^j$. Then
+\begin{align*}
+q_1&=-\frac{2(p_*^2s_*+3p_*s_*^2+6p_*s_*+3p_*+s_*^3+3s_*^2+3s_*+1)}{D_*},\\
+q_2&=\frac{2p_*^2+p_*s_*^2+6p_*s_*+9p_*+3s_*^3+9s_*^2+9s_*+3}{D_*},\\
+q_3&=-\frac{2(p_*s_*+3s_*^2+6s_*+2)}{D_*},\qquad
+q_4=\frac{p_*+3s_*+5}{D_*}.
+\end{align*}
+The selected arrays use quartics on 450 cells for $H_2$ and 373 for $H_3$. The exact rational nodes, including fallback flags, are embedded.
+
+\subsection{Pair moments from power sums}
+Put $V_j=\sum_i y_i^j$, $V_0=K$, and define
+\[
+ T_r=\av_{i<j}W_{ij}(y_i+y_j)^r.
+\]
+Introduce
+\begin{align*}
+ S_r&=\frac{\sum_{j=0}^r\binom rj V_jV_{r-j}-2^rV_r}{K(K-1)},\\
+ P_r&=\frac{\sum_{j=0}^r\binom rj V_{j+1}V_{r-j+1}-2^rV_{r+2}}{K(K-1)}.
+\end{align*}
+Removing the diagonal terms from the ordered double sums proves these identities. With $A=K\eta$, expansion of~\eqref{eq:weights} gives
+\begin{equation}\label{eq:T}
+ T_r=(1-x)^2S_r+(1-x)AS_{r+1}
+       +\frac{A^2}{2K}S_{r+2}+A^2(1-2/K)P_r.
+\end{equation}
+Thus moments through $T_4$ require, in addition to the lower-degree statistics,
+\[
+ V_5,\quad V_6,\quad V_2V_3,\quad V_2V_4,\quad V_3^2.
+\]
+Multiplying these by every monomial in $P(S,Z)^2$ gives positive weighted distributions computed by~\eqref{eq:partition}. Repeated raw products are collected before evaluation: 60 distinct transforms supply 70 tagged tables for $H_2$, and 75 supply 90 for $H_3$. The highest one-coordinate powers are 14 and 16.
+
+The pointwise pair majorant is
+\begin{equation}\label{eq:polymajorant}
+ \frac1{d_0^2}\av_{i<j}W_{ij}Q\left(\frac{\zeta(y_i+y_j)}{d_0}\right)
+ =R_{\eta,\zeta}(x)^2+\sum_{j=1}^4q_j\frac{\zeta^jT_j}{d_0^{j+2}}.
+\end{equation}
+The quadratic version is obtained by keeping only its two terms. A cell's chosen polynomial is fixed before acceptance.
+
+\subsection{Cell enclosures, normalization, and removed mass}
+On a cell $l\le x\le r$ with $l>0$, the function $g_R(x)=R_{\eta,\zeta}(x)^2$ is convex for the selected parameters. For a common real intercept $a_0$ set
+\[
+ b_j=\max\left\{\frac{g_R(l)-a_0}{l},\frac{g_R(r)-a_0}{r}\right\}.
+\]
+The affine function $a_0+b_jx$ dominates both endpoints, hence dominates $g_R$ throughout the cell. Let the pair correction be the negative of the sum in~\eqref{eq:polymajorant}, and put
+$E_j=-b_jx+\text{pair correction}$. Then the affine-relaxed pair majorant is exactly $a_0-E_j$ and dominates the original pair expression.
+
+Each rational coefficient function of a nonnegative statistic has a positive denominator $(1-\zeta x)^6$. Express numerator and denominator in a common-degree Bernstein basis on the cell. If their coefficients are $n_i,d_i$ with $d_i>0$, then
+\[
+ \min_i(n_i/d_i)\le N(x)/D(x)\le\max_i(n_i/d_i).
+\]
+This follows because the ratio is a convex combination of coefficient ratios with nonnegative weights. Use exact rational bounds before multiplying by $P^2$, collect signed monomial coefficients, and apply the signed CDF integration~\eqref{eq:abel}.
+
+Let $N$ be a lower bound for the improvement integral after arithmetic support removal. Because the complete polynomial majorant is nonnegative, $E_j\le a_0$ pointwise; the upper allowance for removing mass is therefore $\max(0,a_0)\Delta^+$. If the unrestricted squared norm lies in $[D^-,D^+]$, then
+\begin{equation}\label{eq:normcorrection}
+ M^+=a_0-\frac{N}{D_*},\qquad
+ D_*=
+ \begin{cases}D^+,&N\ge0,\\D^- -\Delta^+,&N<0,\end{cases}
+\end{equation}
+is a valid upper bound for the restricted expectation. A negative improvement integral uses the \emph{lower} denominator endpoint. This sign distinction is necessary. Both final four-moment calculations use the negative case.
+
+In the normalized source coordinates $y_i=t_i/\sigma$, with physical scale tending to $\rho$ and $b\uparrow1/2$, the final pair bound is
+\[
+ C^+=8(\rho\sigma)^2J_k(k\eta)^+M^+.
+\]
+The accepted exact parameters and conservative displays are
+\begin{center}\smalltable
+\begin{tabular}{@{}lrr@{}}\toprule
+&$H_2$&$H_3$\\\midrule
+$\eta$&$46843/40000$&$1110419/10^6$\\
+$a_0$&$-50283189/12500000$&$-209190887/50000000$\\
+$M^+$ (display)&4.205122656109590&4.328347372306488\\
+Pair upper bound&$1.986930449098\,10^{-5}$&$2.185545128531\,10^{-8}$\\\bottomrule
+\end{tabular}\end{center}
+The displayed pair endpoints are rounded upward. Exact longer rational enclosures and the strict-support variants are in \path{verified_final/m2_final.json} and \path{verified_final/m3_final.json}.
+
+\section{Symmetric slicing and radial pair costs for \texorpdfstring{$H_4,H_5$}{H4,H5}}\label{sec:slicing}
+The last two results use the source radial distribution jointly with coordinate deletion. Selecting a favourable quotient slice first and assigning it the source distribution would not be justified; the joint averaging argument below avoids that error.
+
+\subsection{Geometry of capped dilation}
+Start with a symmetric $k$-coordinate source $F$ already restricted to
+$\mathcal R_k(\sigma;u_0/a_*,\kappa/a_*)$. Delete $d$ coordinates with vector $z$ and total $Z$, leaving $K=k-d$. Write $F_z$ for the remaining slice and put
+\[
+ \alpha(z)=\min\{a_*,\sigma/(\sigma-Z)\},\qquad H_z(y)=F_z(y/\alpha).
+\]
+Slices with zero squared norm are ignored. Fixing coordinates leaves symmetry in the remaining coordinates, and common dilation preserves it. The outer cap holds since $\alpha(\sigma-Z)\le\sigma$. The arithmetic tail bounds hold because a threshold $v>u_0$ corresponds to $v/\alpha>u_0/a_*$ and
+\[
+ \tfrac32v+\sum_{y_i\ge v}y_i
+ \le\alpha\left[\tfrac32(v/\alpha)+\sum_{t_i\ge v/\alpha}t_i\right]
+ \le\alpha\kappa/a_*\le\kappa.
+\]
+The marginal domain and the total mass satisfy
+\begin{equation}\label{eq:dilation}
+ \tau/\alpha\ge\tau(1-Z/\sigma)\ge\tau-Z,
+ \qquad \alpha(S-Z)\le S\quad(S\le\sigma).
+\end{equation}
+For the second inequality, $\sigma(S-Z)\le S(\sigma-Z)$ is equivalent to $S\le\sigma$ when $Z>0$; the case $Z=0$ is immediate.
+
+\subsection{Exact finite sampling}
+Let $a_*=r/(r-1)$ for an integer $r\ge2$, and under $\nu=F^2/I(F)$ set
+\[
+ U=\sum_i\min(t_i/\sigma,1/r),\qquad
+ \beta=\E_\nu(1-1/\alpha)=\E_\nu\min(Z/\sigma,1/r).
+\]
+\begin{lemma}\label{lem:sampling}
+If $x_i\ge0$, $\sum_i x_i\le1$, and $D$ is a uniformly chosen $d$-element coordinate subset, then
+\[
+ \E_D\min\left(\sum_{i\in D}x_i,1/r\right)
+ \ge\frac1r\left(1-\frac{\binom{k-r}{d}}{\binom{k}{d}}\right)
+ \sum_i\min(x_i,1/r).
+\]
+\end{lemma}
+\begin{proof}
+Cap individual coordinates at $1/r$; this does not change the capped selected sum. The expectation is symmetric and concave on $0\le x_i\le1/r$, $\sum_i x_i\le1$. Vertices have $j\le r$ nonzero coordinates, all equal to $1/r$. At a vertex its value is $p_j/r$, where
+$p_j=1-\binom{k-j}{d}/\binom{k}{d}$. The increments $p_{j+1}-p_j=\binom{k-j-1}{d-1}/\binom{k}{d}$ decrease, so $p_j/j\ge p_r/r$. Subtracting the proposed linear lower bound gives a concave function nonnegative at every vertex, hence throughout the polytope.
+\end{proof}
+By source symmetry and a certified mean $\mu^-\le\E_\nu U$, it follows that
+\begin{equation}\label{eq:beta}
+ \beta\ge\beta_-:=\frac{\mu^-}{r}
+ \left(1-\prod_{j=0}^{r-1}\frac{k-d-j}{k-j}\right).
+\end{equation}
+The product is short and exact; no enormous binomial coefficients need be approximated.
+
+\subsection{Enclosing the source radial expectation}
+For $\eta\ge1-\zeta$, $R=R_{\eta,\zeta}$ is positive and increasing. The function
+\[
+ \varphi(x)=\frac{R(1)^2-R(x)^2}{x}
+\]
+is nonnegative and decreasing on $(0,1]$: differentiating gives
+$[R(x)^2-R(1)^2-x(R^2)'(x)]/x^2\le0$. Since $U\le x$,
+\[
+ R(x)^2\le R(1)^2-\varphi(x)U.
+\]
+The positive tagged CDFs of $UZ_A$ give cell lower bounds
+$L_j\le\int_{e_{j-1}<S\le e_j}UP^2\dd\mu_0$, clipped at zero only after summing the full cell. Therefore
+\[
+ N^-:=\sum_jL_j\varphi(e_j/\sigma)
+ \le\int\varphi(S/\sigma)UP^2\dd\mu_0.
+\]
+Removing squared mass at most $\Delta^+$ costs at most $R(1)^2\Delta^+$. With $D^+\ge\E P^2$ and a positive subtracted numerator,
+\begin{equation}\label{eq:radialM}
+ M^+=R(1)^2-\frac{N^- -R(1)^2\Delta^+}{D^+}
+ \ge\E_\nu R(S/\sigma)^2.
+\end{equation}
+For $H_5$, the individual cap is inactive, so $U=S/\sigma$. For $H_4$ only $U\le S/\sigma$ is used.
+
+\subsection{The joint source-averaged criterion}
+\begin{proposition}\label{prop:joint}
+Let $q$ bound the tightened source quotient, $M^+\ge\E_\nu R_{\eta,\zeta}(S/\sigma)^2$, and $\beta_-\le\beta$. For fixed $\lambda<\rho$, $b<1/2$ and $\zeta=\lambda\sigma/b$, an admissible $K$-tuple gives $H_m\le D$ if
+\begin{equation}\label{eq:jointcriterion}
+ \lambda\frac Kk q-m(1-\beta_-)
+ >B_D(\mathcal H)\,2\zeta^2J_K(K\eta)M^+.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Let $I_z=\int F_z^2$, and let $T_z$ be the sum of the remaining $K$ marginal numerators truncated at $\tau/\alpha(z)$. The rescaled quotient is $\alpha T_z/I_z$. By~\eqref{eq:dilation}, $\int T_z\dd z\ge(K/k)qI(F)$ and $\int I_z/\alpha\dd z=(1-\beta)I(F)$.
+
+Apply the prime-count and radial pair bounds to a slice, multiply their difference by $I_z/\alpha$, and integrate before choosing the slice. By monotonicity and~\eqref{eq:dilation},
+\[
+ \frac1\alpha R_{\eta,\zeta}\left(\frac{\alpha(S-Z)}\sigma\right)^2
+ \le R_{\eta,\zeta}(S/\sigma)^2.
+\]
+Thus the integrated pair cost is at most
+$B_D2\zeta^2J_K(K\eta)M^+I(F)$, while the integrated count-minus-$m$ term is at least
+$[\lambda(K/k)q-m(1-\beta_-)]I(F)$.
+A positive integral forces a positive nonzero slice. It is symmetric, obeys the required support conditions, and by Lemma~\ref{lem:cluster} forces the desired cluster.
+\end{proof}
+
+The selected data are
+\begin{center}\smalltable
+\begin{tabular}{@{}lrr@{}}\toprule
+&$H_4$&$H_5$\\\midrule
+Source $k$&5\,090\,000&232\,500\,000\\
+Deleted $d$&850&35\,000\\
+Remaining $K$&5\,089\,150&232\,465\,000\\
+$r$&10&4\\
+$\mu^-$&0.9302517661760185&0.9442092422507497\\
+$\eta$&$1081/1000$&$541/500$\\
+$M^+$ (display)&4.444656155771700&4.580801646427795\\\bottomrule
+\end{tabular}\end{center}
+The raw pair cost in~\eqref{eq:jointcriterion} is not the pair cost after dividing by $1-\beta_-$. The final inequalities below consistently use the raw source-averaged normalization.
+
+\section{The four final deductions}\label{sec:deductions}
+The four terminal calculations can be checked with a single formula. Let $q_-$ be a lower bound for the source quotient after the appropriate support deduction, let $C_+$ be a raw pair-cost upper bound, and put
+\begin{equation}\label{eq:terminal}
+ \mathcal M=\rho\frac Kk q_- -m(1-\beta_-)-B_D C_+.
+\end{equation}
+For $H_2,H_3$ take $K=k$ and $\beta_-=0$; this is the direct pair criterion. For $H_4,H_5$ use the source-averaged normalization of Proposition~\ref{prop:joint}. Mixing that normalization with a pair cost already divided by $1-\beta_-$ would be incorrect.
+
+The exact values of $\rho$ used in the terminal calculations are
+\begin{align*}
+ \rho_2&=\frac{151314221527744373}{576460752303423488},\\
+ \rho_3&=\frac{9457552011682609}{36028797018963968},\\
+ \rho_4=\rho_5&=\frac{151320927303522335}{576460752303423488}.
+\end{align*}
+These are $1/4$ plus the exact saved binary64 value of $\omega$, not a separately rounded decimal sum.
+
+\subsection{Short rational endpoints sufficient to verify every sign}
+The following \emph{decimal strings are exact rationals}. They have been shortened conservatively from the complete certificate endpoints: $q_-$ is rounded downward, $C_+$ upward, and $\beta_-$ downward. All four inequalities still pass with these printed values.
+\begin{center}\smalltable
+\begin{tabular}{@{}crr@{}}\toprule
+$m$&$q_-$&$C_+$\\\midrule
+2&7.61991945321770&$1.986930449098\cdot10^{-5}$\\
+3&11.42888323139851&$2.185545128531\cdot10^{-8}$\\
+4&15.23857870587577&$1.945365350719\cdot10^{-11}$\\
+5&19.04804762745624&$1.491020798040\cdot10^{-14}$\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}\smalltable
+\begin{tabular}{@{}crrr@{}}\toprule
+$m$&$\beta_-$&$B_D$&$\mathcal M$ exceeds\\\midrule
+2&0&7&$8.64658\cdot10^{-7}$\\
+3&0&3\,639&$3.04668\cdot10^{-8}$\\
+4&0.00015523001241465&4\,076\,241&$1.68320\cdot10^{-9}$\\
+5&0.00014210693394371&3\,267\,409\,565&$2.09474\cdot10^{-5}$\\\bottomrule
+\end{tabular}\end{center}
+Use the source and selected dimensions in Section~\ref{sec:results}. The displayed lower margins are deliberately weaker than the exact rational outputs. They are not confidence intervals or Monte Carlo estimates.
+
+\subsection{The \texorpdfstring{$H_2$}{H2} deduction}
+For the $k=2305$ source trial, the unrestricted quotient lower endpoint is
+\[Q_0^-=7.61998971086873.\] Its support-loss bound is $7.025765102364\cdot10^{-5}$. The four-moment pair calculation in Section~\ref{sec:fourmoments} supplies the displayed $C_+$. The tuple in Section~\ref{sec:finite} has exactly seven pairs farther apart than $19844$. Therefore
+\[
+ \rho_2(7.61991945321770)-2
+ -7(1.986930449098\cdot10^{-5})>8.64658\cdot10^{-7}>0.
+\]
+The cluster criterion yields $H_2\le19844$. The positive margin covers the seven long pairs of the selected tuple.
+
+\subsection{The \texorpdfstring{$H_3$}{H3} deduction}
+The final source trial has $k=110070$, unrestricted quotient lower endpoint $11.42888323139852$, and support loss at most $2.300885937222\cdot10^{-46}$. The four-moment calculation gives the stated pair upper bound. The final pair-aware tuple has 3639 pairs farther apart than $1357780$, so
+\[
+ \rho_3(11.42888323139851)-3
+ -3639(2.185545128531\cdot10^{-8})>3.04668\cdot10^{-8}>0.
+\]
+Thus $H_3\le1357780$. The full tuple diameter, $1358982$, is larger. 
+
+\subsection{The \texorpdfstring{$H_4$}{H4} and \texorpdfstring{$H_5$}{H5} deductions}
+For $H_4$ use $(k,K)=(5090000,5089150)$, a tightened source with dilation cap $10/9$, and the radial parameter $\eta=1081/1000$. For $H_5$ use $(k,K)=(232500000,232465000)$, cap $4/3$, and $\eta=541/500$. The full source, cap, mean, and radial data are given in Section~\ref{sec:slicing}. Substitution of the printed rational endpoints into~\eqref{eq:terminal} gives respectively
+\begin{align*}
+ &\rho_4\frac{5089150}{5090000}(15.23857870587577)
+ -4(1-0.00015523001241465)\\[-2pt]
+ &\hspace{25mm}-4076241(1.945365350719\cdot10^{-11})>1.68320\cdot10^{-9},\\[4pt]
+ &\rho_5\frac{232465000}{232500000}(19.04804762745624)
+ -5(1-0.00014210693394371)\\[-2pt]
+ &\hspace{25mm}-3267409565(1.491020798040\cdot10^{-14})>2.09474\cdot10^{-5}.
+\end{align*}
+The exact tuple and pair counts below complete the two source-averaged deductions.
+
+\paragraph{Strictness and approximation.}
+The terminal certificate files separately retain positive checks at physical scale $\lambda=\rho-2^{-60}$ and auxiliary radius $b=1/2-2^{-60}$, using the corresponding constants. Alternatively, continuity at the limiting parameters and the strict positive margins guarantee sufficiently small strict shrinkages. Smoothing errors can then be chosen smaller than the remaining fixed margin, followed by the translate-scale asymptotic. All tuple sizes, entries, and trial parameters are fixed while the translate scale tends to infinity.
+
+\begin{proof}[Completion of the proof of Theorem~\ref{thm:main}]
+The stated analytic inputs and Theorem~\ref{prop:firstmoment} provide the prime-count estimates. Section~\ref{sec:pair} supplies the trace-preserving pair majorant. Sections~\ref{sec:fourmoments} and~\ref{sec:slicing} give, respectively, the fixed-trial and source-averaged pair deductions from their numerical enclosures. The four positive inequalities above, together with the admissibility and pair-count certificates in Section~\ref{sec:finite}, force the required clusters by Lemma~\ref{lem:cluster}. Their lengths are exactly the four values in~\eqref{eq:main}.
+\end{proof}
+
+\section{Finite tuple certificates and exact pair counts}\label{sec:finite}
+For any selected tuple $\mathcal H=(h_1<\cdots<h_K)$, an admissibility certificate consists of one residue $r_p$ for every prime $p\le K$ such that $h_i\not\equiv r_p\pmod p$ for all $i$. Primes above $K$ are automatic by cardinality. It is not enough to check only the primes used by a search heuristic: the final verifier checks every relevant prime.
+
+\begin{center}\smalltable
+\begin{tabular}{@{}crrr@{}}\toprule
+$m$&Selected cardinality&First shift&Last shift\\\midrule
+2&2\,305&$-2$&19\,870\\
+3&110\,070&$-627\,106$&731\,876\\
+4&5\,089\,150&$-37\,934\,836$&44\,347\,442\\
+5&232\,465\,000&$-2\,401\,174\,519$&2\,430\,930\,259\\\bottomrule
+\end{tabular}\end{center}
+\begin{center}\smalltable
+\begin{tabular}{@{}crrr@{}}\toprule
+$m$&Full tuple diameter&Certified cluster span&Long pairs\\\midrule
+2&19\,872&19\,844&7\\
+3&1\,358\,982&1\,357\,780&3\,639\\
+4&82\,282\,278&82\,234\,788&4\,076\,241\\
+5&4\,832\,104\,778&4\,830\,355\,416&3\,267\,409\,565\\\bottomrule
+\end{tabular}\end{center}
+
+\subsection{Explicit smaller tuples and residue-defined completions}
+The $H_2$ and $H_3$ tuples, all their missing residues, and the complete lists of long pairs are explicit text/CSV files in the attachment. The C++ checker scans forbidden arithmetic progressions through a membership bitmap. The separate Python checker generates its own primes and directly reduces every tuple entry modulo each prime. The counts are 342 primes for $H_2$ and 10460 for $H_3$.
+
+A residue system also defines the whole permitted set
+\[
+ \mathcal A_{L,R}=\{x\in[L,R]\cap\mathbb Z:x\not\equiv r_p\pmod p\text{ for every }p\le K\}.
+\]
+Any $K$-element subset is admissible. The final certificate selections scanned all 138722 windows for $H_2$ in its specified completion over $[-10^6,10^6]$, and all 464479 windows for $H_3$ over $[-5\cdot10^6,5\cdot10^6]$. The latter permitted set has 574548 entries. The final witness systems and search ranges, not a claim of global optimum, determine these scans.
+
+Pair-aware residue optimization uses the integer identity
+\begin{equation}\label{eq:deletionpairs}
+ B_D(T\setminus R)=B_D(T)-\sum_{x\in R}\deg_{D,T}(x)+B_D(R).
+\end{equation}
+Every removed--supplied edge is subtracted once; each removed--removed edge is subtracted twice and added back once. Discovery can be heuristic without making the final admissibility or pair verification heuristic.
+
+\subsection{The \texorpdfstring{$H_4$}{H4} tuple}
+The stored admissible parent has 5092341 entries. The selected 5089150-entry window begins at zero-based index 2305 and has the endpoints in the table. The certificate data scans all 3192 possible windows. Its complete verifier checks all 354270 primes up to the selected cardinality; a separate integer program checks the 4076241 long pairs.
+
+The explicit selected tuple is reconstructed from the parent rather than duplicated throughout the cumulative archive. Its recorded SHA-256 is
+\begin{lstlisting}
+aa5d8b97b8fcc3e63a3b44d2c0affecbfa6868df7896185f61cf4f2300acf30b
+\end{lstlisting}
+The canonical parent, witness, and reconstruction paths are in Section~\ref{app:registry}.
+
+\subsection{The large signed-prime certificate for \texorpdfstring{$H_5$}{H5}}
+The finite universe is
+\[
+ \{\pm p:10^7<p\le2432107459,\ p\text{ prime}\}.
+\]
+For every prime $p$ in $(10^7,234360000]$, the certificate records a missing residue $r_p$. If $r_p=0$, delete the pair $\{-p,p\}$. Otherwise check the specified nonzero residue against every supplied positive and negative prime. Primes at most $10^7$ omit zero automatically; primes above the selected cardinality are automatic.
+
+The final reconstructed parent contains 233950978 entries. The record contains 12204094 prime witnesses: 11539945 nonzero witnesses and 664149 deletion witnesses. Its independently implemented segmented-byte-sieve verifier reports zero failures in the certificate data. The selected window contains 115543867 negative and 116921133 positive entries, totaling 232465000. Its endpoints are those in the table. The recorded selection scans 1485979 windows at this cardinality.
+
+The complete prime/residue sequence is reconstructed from a compressed base and explicitly checked patches. The final decoded binary sequence has SHA-256
+\begin{lstlisting}
+f223f9823aef305e4eeeec4f64c933ba20e1dd42872408c557e5a3011cd4c191
+\end{lstlisting}
+No claimed admissibility follows merely from a checksum: the residue verifier must still run. The checksum identifies the exact intended finite input.
+
+\subsection{Counting pairs without enumerating billions of them}
+For a sorted tuple, define
+\[
+ j(i)=\min\{j:h_j>h_i+D\},
+\]
+with $j(i)=K+1$ if there is no such index. Then
+\[
+ B_D=\sum_{i=1}^{K}(K-j(i)+1).
+\]
+The indices $j(i)$ are nondecreasing, so a two-pointer count is linear. Binary-search counting is a useful independent implementation. The $H_2,H_3$ archives additionally list every long pair.
+
+For the signed-prime parent, write its positive entries as $q_1<\cdots<q_N$. A selected window crossing zero has $n$ negative entries and $K-n$ positive entries. Its cross-sign long pairs satisfy $q_i+q_j>D$ with $i\le n$ and $j\le K-n$. Monotone threshold counts give their total. Moving one position changes one row and one column; only the upper prime tails can contribute. The code separately checks that every omitted lower entry is too small to form a long pair even with $q_N$. This is an exact ordered-counting algorithm, not sampling.
+
+\subsection{Interpretation of the finite searches}
+The final witnesses establish admissibility, and the pair counts establish the integer term in~\eqref{eq:terminal}. Exhausting consecutive windows proves optimality only within the selected ordered parent and objective. It does not prove a globally minimum admissible-tuple diameter, an optimal sieve trial, or a terminal value of $H_m$.
+
+\section{Verification of the computational certificates}\label{sec:status}
+The computational assertions are finite interval and integer inequalities. Each trial is specified by exact dyadic profile boundaries and coefficient heights. The quotient evaluator encloses Fourier truncation, periodization, scalar special-function, interpolation, and rounding errors. The acceptance step operates on exact rational interpretations of the recorded endpoints.
+
+The tuple verifiers check cardinality, distinctness, order, and an omitted residue modulo every prime not exceeding the tuple size. For the largest tuple, a segmented sieve reconstructs the signed-prime parent from the residue witnesses. Pair counts are computed by monotone threshold scans and checked using a separate implementation.
+
+The supplementary code provides two levels of verification: the terminal rational and modular checks, and the full interval evaluations. The final numerical inequalities are summarized in Section~\ref{sec:deductions}.
+
+\section{Computational inputs and reproducibility}\label{sec:reproduce}\label{app:registry}
+The supplementary package defines the four final certificates by \path{verified_final/m2_final.json} through \path{verified_final/m5_final.json}. Each stores exact rational endpoints for the quotient, support loss, pair cost, slicing correction and terminal margin. The physical trial specifications and the completed quotient outputs are:
+\begin{center}\small\begin{tabularx}{\textwidth}{@{}lX@{}}\toprule
+Case&Exact trial and completed quotient certificate\\\midrule
+$H_2$&\path{mpfr_runs/m2.json}; \path{mpfr_runs/m2.interval_certificate.json}.\\
+$H_3$&\path{mpfr_runs/m3.json}; \path{mpfr_runs/m3.interval_certificate.json}.\\
+$H_4$&\path{mpfr_global_runs/m4.json}; \path{mpfr_global_runs/m4.interval_certificate.json}.\\
+$H_5$&\path{mpfr_finer_runs/m5.json}; \path{mpfr_finer_runs/m5.interval_certificate.json}.\\\bottomrule
+\end{tabularx}\end{center}
+The support probabilities are in \path{mpfr_support/}; all pair-moment distributions for $H_2,H_3$ are in \path{mpfr_pair_moments/}; the capped-moment distributions for $H_4,H_5$ are in \path{mpfr_means/}. The exact polynomial nodes and original profile data remain under \path{prime_gap_boundary_bundle/}. They are fixed inputs, not values supplied by an optimizer at verification time.
+
+The C++ sources in \path{mpfr_backend/} implement the independent endpoint arithmetic and primitive recurrence. The driver programs load these before importing the mathematical Fourier and support routines. The verification uses Python 3, NumPy, SciPy, SymPy, MPFR 4.2.2, GMP, and C++17/OpenMP. The optional high-precision diagnostic comparisons use mpmath, but acceptance does not. The binary64 kernels are compiled without fast-math or fused multiply-add contraction. IEEE binary64 operations, gradual underflow, and MPFR's documented directed-rounding semantics are the arithmetic model.
+
+From the extracted package root, run
+\begin{lstlisting}
+bash reproduce.sh --checks
+bash reproduce.sh --full
+\end{lstlisting}
+The first command verifies the manifest, exact component compatibility and all finite integer certificates. The second additionally recomputes all four quotient enclosures, all required support probabilities, all pair and capped-moment distributions, and all rational post-processing. It does not invoke numerical optimization. Temporary primitive tables and reconstructed prime tables are generated locally and are not part of the required input data.
+
+
+
+\clearpage
+\appendix
+\section{Verification of terminal inequalities}\label{app:shortcheck}
+The following calculation verifies the four terminal inequalities from the printed rational endpoints. The input enclosures and modular certificates are verified by the supplementary programs.
+\begin{lstlisting}[language=Python]
+from fractions import Fraction as F
+
+rho = {
+    2: F(151314221527744373, 576460752303423488),
+    3: F(9457552011682609, 36028797018963968),
+    4: F(151320927303522335, 576460752303423488),
+    5: F(151320927303522335, 576460752303423488),
+}
+# m, k, K, B_D, q lower, C upper, beta lower
+rows = [
+ (2,2305,2305,7,
+  '7.61991945321770','1.986930449098e-5','0'),
+ (3,110070,110070,3639,
+  '11.42888323139851','2.185545128531e-8','0'),
+ (4,5090000,5089150,4076241,
+  '15.23857870587577','1.945365350719e-11',
+  '0.00015523001241465'),
+ (5,232500000,232465000,3267409565,
+  '19.04804762745624','1.491020798040e-14',
+  '0.00014210693394371'),
+]
+for m,k,K,B,q,C,beta in rows:
+    margin = rho[m]*F(K,k)*F(q) - m*(1-F(beta)) - B*F(C)
+    assert margin > 0
+    print(m, float(margin))
+\end{lstlisting}
+Every arithmetic operation that determines a sign here is rational. The final conversion to \texttt{float} is for display only.
+
+\clearpage
+\section{Directed numerical enclosure proof}\label{app:numerical-proof}
+This appendix specifies why the numerical programs provide one-sided bounds. Its premises are the documented directed-rounding semantics of MPFR~\cite{mpfr} and correctly rounded IEEE binary64 arithmetic for the indicated operations. It does not assume that agreement with floating-point quadrature proves an enclosure.
+
+\subsection{Endpoint interval operations}
+A real interval is represented by two MPFR endpoints $[l,u]$. Addition and subtraction round the appropriate endpoint combinations outward. Multiplication and division take the minimum and maximum of their four endpoint combinations, rounded in the corresponding direction; a divisor interval containing zero is rejected. Monotone functions $\exp,\log,\sqrt{\cdot}$ are evaluated at the endpoints with the corresponding rounding modes. Integer powers use the parity of the exponent and first bound the absolute value in the even case. Complex quantities are rectangles of real intervals and are combined by their real and imaginary formulas.
+
+For sine and cosine, evaluate the function at a midpoint with directed rounding and enlarge both endpoints by an upper bound for the argument radius. The derivatives have absolute value at most one, so this is an enclosing interval even when the interval crosses an extremum. The midpoint itself is an exactly represented MPFR number; its rounding is included when constructing the radius. Conversion of an endpoint to binary64 uses the same downward or upward direction. Rational inputs are enclosed by dividing their exact integer numerator and denominator.
+
+Every operation of these rules preserves interval containment by elementary monotonicity or the four-corner formula. Induction over the finite expression tree therefore encloses the scalar formulas used for normalization, Fourier coefficients, exponential moments, support probabilities and tagged moments. The special-function series and remainders in Section~\ref{sec:numerics} complete that induction for $E_1$ and $\operatorname{Ei}$. For their input widths, the absolute derivative bounds are $e^{-x}/x$ on the positive $E_1$ ray, $1/x$ on the imaginary ray, and $e^x/x$ for $\operatorname{Ei}(x)$. The programs reject nonfinite enclosures and inadequate widths instead of accepting a midpoint.
+
+\subsection{Fourier coefficient and tail propagation}
+Each set-partition term has a nonnegative coefficient at zero frequency. If its weight contains $r$ labelled power-sum factors, the bound $|\mu_j(\xi)|\le\mu_j(0)$ and $|\phi(\xi)|\le1$ give
+\[
+ |\Phi_A(\xi)|\le m_A|\phi(\xi)|^{n-r}.
+\]
+The programs may use a smaller exponent, which only weakens this upper bound. Thus a single certified scalar tail for $|\phi|$ supplies all positive weighted tails. The coefficient at each retained frequency is evaluated at the interval frequency $2\pi j/P_0$, not at an unaccounted-for rounded frequency. Converting its rectangular midpoint to binary64 contributes an explicit $\ell^1$ input-error allowance.
+
+The formula~\eqref{eq:periodcdf} follows by integrating the Fourier series of the periodized positive measure. The discarded frequencies have absolutely summable majorant from the power-tail bound, so termwise integration is justified. The periodized mass in $[0,y]$ includes the original mass plus translates from $[P_0,\infty)$; the latter is bounded by the positive weighted Chernoff estimate. Consequently the lower CDF endpoint subtracts both the Fourier error and alias allowance, whereas the upper endpoint adds the Fourier error. Clipping below zero and above the total mass uses positivity, not an assumption about numerical accuracy.
+
+The finite frequency blocks use $|\phi'|\le\E X$. In the eventual region, integration by parts for the decreasing density gives
+\[
+ |\phi(\xi)|\le F_X(a)+2f(a)/|\xi|,\qquad 0\le a\le T.
+\]
+For $a>T$ the trivial upper bound one is valid. The implemented constants are weaker than this inequality. A positive power-tail is bounded by its decreasing integral. All finite block endpoints, logarithms and moment factors are interval evaluated. The choice of the truncation index or Chernoff tilt affects efficiency only: its proposed value is inserted into the enclosing formulas before acceptance.
+
+\subsection{Binary64 Fourier synthesis}
+Put $u=2^{-53}$. For an exact operation with a normal result, the usual model is
+$\operatorname{fl}(a\mathbin\circ b)=(a\mathbin\circ b)(1+\delta)$, $|\delta|\le u$; a subnormal result adds an absolute error at most $2^{-1075}$. The programs include an absolute $10^{-290}$ allowance in addition to the relative budgets. Over fewer than $10^{12}$ arithmetic operations on the finite arrays in these certificates, even a conservative accumulation of absolute underflow errors is smaller than this allowance. There is no overflow; nonfinite values cause rejection.
+
+A complex multiplication uses four real products and two sums. Summing the componentwise bounds and applying Cauchy--Schwarz gives an error at most
+\[
+ \frac{6u}{1-6u}|a||b|
+\]
+plus its absolute underflow allowance. Directed interval sine and cosine generate each phase-block base. A converted unit phase has absolute error at most $2u$ plus its displayed interval radius. The accumulated error after $n$ ordinary complex multiplications is bounded by
+\[
+ (1+2u)^{n+1}\left(1+\frac{6u}{1-6u}\right)^n-1.
+\]
+The exact inequalities checked by the verification script put this below $128u$ for blocks of eight and below $4096u$ for blocks of 256. These are the phase budgets used by the short FFT and the direct tagged-distribution sums, respectively.
+
+A butterfly with phase error at most $128u$ has forward error at most
+$256u(|a|+|b|)$ plus the recorded absolute allowance. Inducting over the 16 stages of the $2^{16}$-point FFT gives
+\[
+ ((1+256u)^{16}-1)\|c\|_1
+ +(1+256u)^{16}\|e_{\rm input}\|_1.
+\]
+Separate derivative transforms use the same bound. Their scaled derivative coefficients are interval evaluated before conversion. The pointwise Taylor remainder is~\eqref{eq:taylor}; Horner evaluation through degree seven uses 14 real operations, bounded by $\gamma_{32}$ with $\gamma_n=nu/(1-nu)$. Exact dyadic interpolation positions introduce no additional coordinate uncertainty.
+
+For direct synthesis at the exact profile boundaries, the phase and summation budget $(8192+8J)u\|c\|_1$ dominates the corresponding 256-block phase error and the finite sum. Here $J\le2379$ for every new moment calculation. The affine CDF combination has its own outward budget. These bounds concern the finite coefficient polynomial; the infinite tail, alias mass, and coefficient conversion errors are added separately.
+
+\subsection{Primitive tables and profile coefficients}
+The exact recurrence for $G_p$ was proved in Section~\ref{sec:numerics}. The first two cases use widened binary64 operations and a 20-term positive atanh series for the logarithm. If $x=2^em$, $1\le m<2$, then $z=(m-1)/(m+1)\le1/3$; the displayed tail bound encloses every omitted positive term. Range reduction is exact. The last two cases use a separate, direct MPFR recurrence, removing cancellation concerns from low-precision table generation. Neither construction assumes correctly rounded library logarithms.
+
+On each marginal cell, the signed step expansion uses exact dyadic height differences. Selecting lower or upper primitive endpoints according to their signs gives real lower and upper sums. For $N$ profile terms, their rounded evaluation is enclosed by
+\[
+ \operatorname{fl}(S)\ \pm\ 4(N+3)u(1+10^{-10})
+       \operatorname{fl}\left(\sum|\text{term}|\right)
+       \ \pm\ 10^{-290},
+\]
+with the final endpoint widened once more. The exact inequality
+$4(N+3)u(1+10^{-10})>\gamma_{N+2}/(1-\gamma_{N+2})$
+holds for every selected profile length. It accounts for rounding both the signed and absolute sums. The implementation evaluates disjoint cells in parallel; it does not reassociate a cell's operations.
+
+\subsection{Signed CDF integration}
+Let $c_j$ be exact binary64 lower coefficients for an integrand against a positive measure. Then $\int f\,d\mu\ge\sum_jc_j\mu([e_j,e_{j+1}))$. In the Abel identity~\eqref{eq:abel}, differences of the $c_j$ are rounded downward for a lower sum. Cumulative masses are nonnegative, so decreasing these differences preserves the lower inequality. Select the CDF lower or upper endpoint according to each coefficient's sign, and round each product outward. The upper calculation reverses these directions.
+
+For a finite array of length $N$, any binary64 addition tree is covered by $\gamma_{N+1}\sum|a_j|$. The implemented doubled allowance also accounts for rounding the absolute sum. All arrays satisfy $Nu<10^{-4}$, checked explicitly. Exact rational inequalities in \path{verify_certificate_links.py} verify that every selected allowance exceeds this bound. Summing separate valid lower integrals over disjoint chunks is safe, though cancellation at their shared boundaries may be lost. The $H_4$ certificate therefore uses a single global Abel sum. No region is dropped from an individual signed component: omitted integration regions are dropped only from the complete nonnegative marginal square.
+
+Applying these enclosures gives $N^->0$ for the marginal numerator and $0<D^-\le D\le D^+$ for the squared norm. Outward scalar division then proves
+\[
+ Q_0\ge\frac{k}{m_2}\frac{N^-}{D^+}.
+\]
+This is the enclosing calculation that was executed in full for all four cases.
+
+\subsection{Support probabilities and final scalar deductions}
+The binomial and exponential-moment inequalities are proved in Section~\ref{sec:loss}. Every selected tilt is evaluated by directed MPFR arithmetic. A geometric bin uses interval endpoints for an exact underlying geometric partition; rounding the heavy-count threshold downward and the light-sum cutoff upward only enlarges its necessary event. Summing those nonnegative event bounds therefore covers every support violation. The positive subnormal endpoint $2^{-1074}$ in the last case is an upper bound, never an exact zero.
+
+The amplitude bound for $H_5$ is $17.16601081281021$. Its slightly enlarged outward endpoint was used to recompute both the support loss and removed-mass probability. For every case, the support calculation's scaled squared-norm lower endpoint was checked against the fresh quotient norm and the proved amplitude bound. This verifies the compatibility of independently evaluated components rather than presuming that a saved denominator is valid for a changed input.
+
+All final pair calculations use the freshly evaluated positive weighted distributions. The quartic or quadratic majorants are pointwise polynomial identities; their chosen rational nodes need not be optimal. Cell coefficient inequalities, signed CDF collection, the sign-dependent norm correction~\eqref{eq:normcorrection}, and the source-averaged inequality~\eqref{eq:jointcriterion} are evaluated with exact rational endpoints. The printed terminal endpoints are rounded in the conservative directions and independently rechecked in Appendix~\ref{app:shortcheck}.
+
+\section{Complete execution record}\label{sec:audit}
+The four quotient integrations, all source support probabilities, the 86 and 105 distinct raw pair-moment transforms for $H_2,H_3$, and the fourteen capped-moment distributions for each of $H_4,H_5$ completed with the directed endpoint backend. A physical trial is identified by its exact coefficient arrays, dyadic cell edges, coordinate parameters and dimension. Exact fraction checks verify that grid refinement leaves that trial unchanged.
+
+The first three quotient grids are respectively $2^{-25}$, $2^{-26}$ and $2^{-23}$; the fourth is $2^{-25}$. Their retained positive frequency counts are 1217, 1522, 973 and 1217. The capped-moment computations for the last two cases use 1903 and 2379 frequencies. The executed outputs, including all tail and rounding budgets, are stored in the certificate files listed in Section~\ref{sec:reproduce}.
+
+The final modular checks cover 342, 10\,460 and 354\,270 primes for the first three selected tuples. For the fourth, the independent segmented sieve reconstructed the parent and checked all 12\,204\,094 residue witnesses, with zero failures. The exact long-pair totals are 7, 3639, 4\,076\,241 and 3\,267\,409\,565. Independent binary-search and native two-pointer counts agree. The small tuples additionally pass direct reduction of every entry modulo each relevant prime.
+
+The verification script checks the physical identity of all linked trial specifications, strict arithmetic parameters, support-denominator compatibility, exact quartic identities, forward-error budget inequalities, and all four strict final inequalities. These are completed finite checks. High-precision quadrature comparisons and randomized algebra tests are retained as diagnostics only; none replaces an enclosing inequality in the proof.
+
+\section{Supplementary computational certificates}
+The complete supplementary package contains the exact input profiles, all completed enclosure outputs, MPFR and native-kernel source, full modular witnesses, reconstruction programs and the final exact-rational checker. \path{MANIFEST.json} identifies the source and data files. Generated tables can be reconstructed by the full command without previous downloads. The proof does not assert that any trial, tuple, or resulting bound is optimal.
+
+\begingroup\small
+\begin{thebibliography}{9}
+\bibitem{polymath}
+D.~H.~J. Polymath, \emph{Variants of the Selberg sieve, and bounded intervals containing many primes},
+Research in the Mathematical Sciences \textbf{1} (2014), article 12.
+Version 4, 22 December 2014. Theorem~2.3, Theorem~3.6(i), Lemma~4.1 and \S5.3.
+\url{https://arxiv.org/abs/1407.4897v4}.
+
+\bibitem{shortgaps}
+OpenAI, \emph{Improved short gaps between primes}, preprint, 30 August 2026.
+Definition~2.1, equation~(2.5), Proposition~2.14, Proposition~2.18, Corollary~2.19 and Appendix~A.4.
+\url{https://cdn.openai.com/pdf/51126fac-1b68-4128-9666-c908bcc16033/short_gaps.pdf}.
+
+\bibitem{stadlmann}
+J.~Stadlmann, \emph{On primes in arithmetic progressions and bounded gaps between many primes},
+version 3, 22 February 2025. Proposition~1 and \S2.1.1.
+\url{https://arxiv.org/abs/2309.00425v3}.
+
+\bibitem{sarajian}
+G.~Sarajian and A.~Weingartner, \emph{An extension of smooth numbers: multiple dense divisibility},
+version 2, 24 September 2025. Theorem~2 and Lemma~2.
+\url{https://arxiv.org/abs/2504.02699v2}.
+\bibitem{mpfr}
+The MPFR team, \emph{GNU MPFR 4.2.2 manual}, sections on rounding modes, functions, and IEEE arithmetic.
+\url{https://www.mpfr.org/mpfr-current/mpfr.html}.
+\end{thebibliography}
+\endgroup
+\end{document}
