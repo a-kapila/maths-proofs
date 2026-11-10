@@ -25,7 +25,8 @@ The manuscript claims that quasihalting of the specified 51-state beeping Turing
 
 - [Read the original Markdown manuscript](beeping-busy-beaver-51/m51_selfcontained.md)
 
-**Missing companion files:** `rocq51.tar.gz` (the Rocq simulation development required by the manuscript) and `checks51.tar.gz` (numerical checks) were attached to the original message but could not be retrieved for this upload. They are not included in this repository. The Busy Beaver package is therefore incomplete for reproduction.
+- [Rocq simulation development](beeping-busy-beaver-51/rocq51.tar.gz)
+- [Numerical checks](beeping-busy-beaver-51/checks51.tar.gz)
 
 ### 3. Finite prime gaps from weighted Selberg sieves and pair penalties
 
